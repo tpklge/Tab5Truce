@@ -4,6 +4,7 @@
 // https://github.com/justcallmekoko/ESP32Marauder/wiki/arduino-ide-setup But change the file in:
 // C:\Users\<YOur User>\AppData\Local\Arduino15\packages\m5stack\hardware\esp32\2.0.9
 #include "wifi_atks.h"
+#include "core/truce/runtime.h"
 #include "core/display.h"
 #include "core/main_menu.h"
 #include "core/mykeyboard.h"
@@ -168,6 +169,10 @@ void wsl_bypasser_send_raw_frame(const wifi_ap_record_t *ap_record, uint8_t chan
 }
 
 void wifi_atk_info(const String &tssid, const String &mac, uint8_t channel) {
+#ifdef TRUCE_LVGL
+    returnToMenu=!truce::inspect("Wi-Fi","Informações da rede",{"Rede: "+tssid,"Canal: "+String(channel),"BSSID: "+mac});
+    return;
+#endif
     drawMainBorder();
     tft.setTextColor(bruceConfig.priColor);
     int rowStep = LH * FP + 10;
@@ -312,6 +317,9 @@ void wifi_atk_menu() {
             String optionText = encryptionPrefix + displaySSID + " (" + String(rssi) + "|" +
                                 encryptionTypeStr + "|ch." + String(ch) + ")";
 
+#ifdef TRUCE_LVGL
+            optionText=displaySSID+"\n"+String(rssi)+" dBm • "+encryptionTypeStr+" • Canal "+String(ch);
+#endif
             options.push_back({optionText.c_str(), [=]() {
                                    ap_record = ap_records[i];
                                    target_atk_menu(
@@ -324,7 +332,11 @@ void wifi_atk_menu() {
 
         addOptionToMainMenu();
 
+#ifdef TRUCE_LVGL
+        loopOptions(options,MENU_TYPE_SUBMENU,"Redes Wi-Fi");
+#else
         loopOptions(options);
+#endif
         options.clear();
         ap_records.clear();
         ap_records.shrink_to_fit();

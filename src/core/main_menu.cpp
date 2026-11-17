@@ -48,6 +48,16 @@ void MainMenu::begin(void) {
     returnToMenu = false;
     options = {};
 
+#ifdef TRUCE_LVGL
+    mainMenuGridColumns = 0;
+    for (auto *item : _menuItems) {
+        if (std::find(bruceConfig.disabledMenus.begin(), bruceConfig.disabledMenus.end(), item->getName()) !=
+            bruceConfig.disabledMenus.end()) continue;
+        options.emplace_back(item->getName(), [item]() { item->optionsMenu(); }, false, nullptr, item);
+    }
+    _currentIndex = loopOptions(options, MENU_TYPE_MAIN, "TRUCE", _currentIndex);
+    return;
+#endif
     bool gridStyle = bruceConfig.mainMenuStyle == MAIN_MENU_GRID;
 
     // Option::hover is a plain function pointer, so both renderers stay capture-less
@@ -81,7 +91,17 @@ void MainMenu::begin(void) {
             options.push_back(
                 {// selected lambda
                  itemName,
-                 [this, i]() { _menuItems[i]->optionsMenu(); },
+                 [this, i]() {
+#ifdef BRUCE_TAB5_UI
+                     // Submenus use their existing header and navigation layout.
+                     const uint8_t columns = mainMenuGridColumns;
+                     mainMenuGridColumns = 0;
+#endif
+                     _menuItems[i]->optionsMenu();
+#ifdef BRUCE_TAB5_UI
+                     mainMenuGridColumns = columns;
+#endif
+                 },
                  false, // selected = false
                  renderItem,
                  _menuItems[i]
@@ -140,6 +160,13 @@ void MainMenu::buildGridLayout(int itemCount) {
     int areaW = tftWidth - 2 * areaX - PAGE_TAP_W;
     int areaH = tftHeight - areaY - areaX;
 
+#ifdef BRUCE_TAB5_UI
+    areaX = 24;
+    areaY = 88;
+    areaW = tftWidth - 2 * areaX - 48;
+    areaH = tftHeight - areaY - 24;
+#endif
+
     // Try every column count down to the MIN_CELL_W floor and keep the one whose resulting cells
     // are largest in their smaller dimension (min(cellW, cellH)) — that's what a lopsided grid
     // wastes: a handful of very wide, short rows or very tall, narrow columns both score low here,
@@ -167,10 +194,17 @@ void MainMenu::buildGridLayout(int itemCount) {
     _grid.cellH = areaH / _grid.visibleRows; // fills whatever height is actually available
 
     _grid.labelSize = _grid.cellW >= 8 * LW * FM ? FM : FP;
+#ifdef BRUCE_TAB5_UI
+    _grid.labelSize = 3;
+#endif
     // Everything the cell has left once the label and a thin margin are taken out
     _grid.iconBox = _grid.cellH - LH * _grid.labelSize - 6;
     if (_grid.iconBox > _grid.cellW - 4) _grid.iconBox = _grid.cellW - 4; // narrow cells cap it
     if (_grid.iconBox < 12) _grid.iconBox = 12;
+
+#ifdef BRUCE_TAB5_UI
+    _grid.iconBox = min(128, min(_grid.cellW - 40, _grid.cellH - LH * _grid.labelSize - 40));
+#endif
 
     // Center whatever is left over so the grid doesn't hug the border
     _grid.x = areaX + (areaW - _grid.cols * _grid.cellW) / 2;
@@ -255,19 +289,45 @@ void MainMenu::drawGridCell(int index, bool selected) {
     uint16_t fgColor = selected ? bruceConfig.bgColor : bruceConfig.priColor;
 
     tft.fillRect(x, y, _grid.cellW, _grid.cellH, bruceConfig.bgColor);
+#ifdef BRUCE_TAB5_UI
+    // Blend toward the accent in RGB565 without assuming a dark theme.
+    const uint16_t base = bruceConfig.bgColor;
+    const uint16_t accent = bruceConfig.priColor;
+    const uint16_t surface = ((((base >> 11) * 7 + (accent >> 11)) / 8) << 11) |
+                             (((((base >> 5) & 63) * 7 + ((accent >> 5) & 63)) / 8) << 5) |
+                             (((base & 31) * 7 + (accent & 31)) / 8);
+    bgColor = selected ? accent : surface;
+    tft.fillRoundRect(x + 8, y + 8, _grid.cellW - 16, _grid.cellH - 16, 16, bgColor);
+    tft.drawRoundRect(x + 8, y + 8, _grid.cellW - 16, _grid.cellH - 16, 16,
+                      selected ? bruceConfig.secColor : surface);
+#else
     if (selected) tft.fillRoundRect(x + 1, y + 1, _grid.cellW - 2, _grid.cellH - 2, 3, bgColor);
+#endif
 
     MenuItemInterface *item = static_cast<MenuItemInterface *>(options[index].hoverPointer);
-    if (item)
-        item->drawIconInBox(x + _grid.cellW / 2, y + 3 + _grid.iconBox / 2, _grid.iconBox, fgColor, bgColor);
+    int iconY = y + 3 + _grid.iconBox / 2;
+#ifdef BRUCE_TAB5_UI
+    iconY = y + (_grid.cellH - LH * _grid.labelSize - 24) / 2;
+#endif
+    if (item && !item->drawThemeInBox(x + _grid.cellW / 2, iconY, _grid.iconBox, bgColor))
+        item->drawIconInBox(x + _grid.cellW / 2, iconY, _grid.iconBox, fgColor, bgColor);
 
-    int maxChars = (_grid.cellW - 4) / (LW * _grid.labelSize);
+    int labelBottom = 3;
+    int labelPadding = 4;
+#ifdef BRUCE_TAB5_UI
+    labelBottom = 24;
+    labelPadding = 32;
+#endif
+    int maxChars = max(1, (_grid.cellW - labelPadding) / (LW * _grid.labelSize));
+    String label = options[index].label;
+    if ((int)label.length() > maxChars && maxChars > 3) label = label.substring(0, maxChars - 3) + "...";
+    if ((int)label.length() > maxChars) label = label.substring(0, maxChars);
     tft.setTextSize(_grid.labelSize);
     tft.setTextColor(fgColor, bgColor);
     tft.drawCentreString(
-        options[index].label.substring(0, maxChars),
+        label,
         x + _grid.cellW / 2,
-        y + _grid.cellH - LH * _grid.labelSize - 3,
+        y + _grid.cellH - LH * _grid.labelSize - labelBottom,
         1
     );
 }

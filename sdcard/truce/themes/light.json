@@ -1,0 +1,27 @@
+{
+  "name": "Claro",
+  "background": "#EDF1F7",
+  "panel": "#FFFFFF",
+  "text": "#142238",
+  "muted": "#526176",
+  "border": "#B7C2D3",
+  "accent": "#C02640",
+  "icons": {
+    "WiFi": "icons/light/wifi.png",
+    "BLE": "icons/light/bluetooth.png",
+    "RF": "icons/light/radio.png",
+    "NRF24": "icons/light/radio.png",
+    "LoRa": "icons/light/antenna.png",
+    "FM": "icons/light/radio.png",
+    "IR": "icons/light/remote.png",
+    "Ethernet": "icons/light/network.png",
+    "GPS": "icons/light/gps.png",
+    "RFID": "icons/light/card.png",
+    "Files": "icons/light/folder.png",
+    "JS Interpreter": "icons/light/script.png",
+    "Clock": "icons/light/clock.png",
+    "Others": "icons/light/apps.png",
+    "Wire Tools": "icons/light/wire.png",
+    "Config": "icons/light/settings.png"
+  }
+}

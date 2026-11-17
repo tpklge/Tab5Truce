@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION)
 #include "core/display.h"
 #include <AsyncTCP.h>
@@ -71,6 +72,9 @@ void ReverseShell() {
     };
 
     // ── Setup ──────────────────────────────────────────────────
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("Reverse Shell");
+    #endif
     tft.fillScreen(bruceConfig.bgColor);
     tft.setTextSize(FM);
     tft.setTextColor(TFT_RED, bruceConfig.bgColor);

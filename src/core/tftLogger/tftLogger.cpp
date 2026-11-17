@@ -1,3 +1,4 @@
+#include <truce_hooks.h>
 #include <cstddef>
 #include <esp32-hal-psram.h>
 #include <globals.h>
@@ -258,7 +259,11 @@ void tft_logger::fillScreen(int32_t color) {
         clearLog();
         checkAndLog(FILLSCREEN, color);
     }
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillScreen(color);
 }
 
@@ -317,14 +322,22 @@ void tft_logger::imageToBin(uint8_t fs, String file, int x, int y, bool center, 
 
 void tft_logger::drawLine(int32_t x, int32_t y, int32_t x1, int32_t y1, int32_t color) {
     if (logging) checkAndLog(DRAWLINE, x, y, x1, y1, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawLine(x, y, x1, y1, color);
     restoreLogger();
 }
 
 void tft_logger::drawRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t color) {
     if (logging) checkAndLog(DRAWRECT, x, y, w, h, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawRect(x, y, w, h, color);
     restoreLogger();
 }
@@ -334,14 +347,22 @@ void tft_logger::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t co
         if (w > 4 && h > 4) removeLogEntriesInsideRect(x, y, w, h);
         checkAndLog(FILLRECT, x, y, w, h, color);
     }
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillRect(x, y, w, h, color);
     restoreLogger();
 }
 
 void tft_logger::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t color) {
     if (logging) checkAndLog(DRAWROUNDRECT, x, y, w, h, r, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawRoundRect(x, y, w, h, r, color);
     restoreLogger();
 }
@@ -351,35 +372,55 @@ void tft_logger::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32
         removeLogEntriesInsideRect(x, y, w, h);
         checkAndLog(FILLROUNDRECT, x, y, w, h, r, color);
     }
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillRoundRect(x, y, w, h, r, color);
     restoreLogger();
 }
 
 void tft_logger::drawCircle(int32_t x, int32_t y, int32_t r, int32_t color) {
     if (logging) checkAndLog(DRAWCIRCLE, x, y, r, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawCircle(x, y, r, color);
     restoreLogger();
 }
 
 void tft_logger::fillCircle(int32_t x, int32_t y, int32_t r, int32_t color) {
     if (logging) checkAndLog(FILLCIRCLE, x, y, r, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillCircle(x, y, r, color);
     restoreLogger();
 }
 
 void tft_logger::drawEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color) {
     if (logging) checkAndLog(DRAWELIPSE, x, y, rx, ry, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawEllipse(x, y, rx, ry, color);
     restoreLogger();
 }
 
 void tft_logger::fillEllipse(int16_t x, int16_t y, int32_t rx, int32_t ry, uint16_t color) {
     if (logging) checkAndLog(FILLELIPSE, x, y, rx, ry, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillEllipse(x, y, rx, ry, color);
     restoreLogger();
 }
@@ -388,7 +429,11 @@ void tft_logger::drawTriangle(
     int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t x3, int32_t y3, int32_t color
 ) {
     if (logging) checkAndLog(DRAWTRIAGLE, x1, y1, x2, y2, x3, y3, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawTriangle(x1, y1, x2, y2, x3, y3, color);
     restoreLogger();
 }
@@ -397,7 +442,11 @@ void tft_logger::fillTriangle(
     int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t x3, int32_t y3, int32_t color
 ) {
     if (logging) checkAndLog(FILLTRIANGLE, x1, y1, x2, y2, x3, y3, color);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::fillTriangle(x1, y1, x2, y2, x3, y3, color);
     restoreLogger();
 }
@@ -409,7 +458,11 @@ void tft_logger::drawArc(
         checkAndLog(
             DRAWARC, x, y, r, ir, (int32_t)startAngle, (int32_t)endAngle, (int32_t)fg_color, (int32_t)bg_color
         );
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawArc(x, y, r, ir, startAngle, endAngle, fg_color, bg_color, smoothArc);
     restoreLogger();
 }
@@ -419,21 +472,33 @@ void tft_logger::drawWideLine(float ax, float ay, float bx, float by, float wd, 
         checkAndLog(
             DRAWWIDELINE, (uint16_t)ax, (uint16_t)ay, (uint16_t)bx, (uint16_t)by, (uint16_t)wd, fg, bg
         );
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawWideLine(ax, ay, bx, by, wd, fg, bg);
     restoreLogger();
 }
 
 void tft_logger::drawFastVLine(int32_t x, int32_t y, int32_t h, int32_t fg) {
     if (logging) checkAndLog(DRAWFASTVLINE, x, y, h, fg);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawFastVLine(x, y, h, fg);
     restoreLogger();
 }
 
 void tft_logger::drawFastHLine(int32_t x, int32_t y, int32_t w, int32_t fg) {
     if (logging) checkAndLog(DRAWFASTHLINE, x, y, w, fg);
-    if (isSleeping) return;
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return;
     BRUCE_TFT_DRIVER::drawFastHLine(x, y, w, fg);
     restoreLogger();
 }
@@ -473,27 +538,48 @@ void tft_logger::log_drawString(String s, tftFuncs fn, int32_t x, int32_t y) {
 }
 
 int16_t tft_logger::drawString(const String &string, int32_t x, int32_t y, uint8_t font) {
+#ifdef TRUCE_LVGL
+    if(truce::captureText(string,x,y))return string.length();
+#endif
     log_drawString(string, DRAWSTRING, x, y);
     int16_t r;
-    if (isSleeping) return string.length();
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return string.length();
     r = BRUCE_TFT_DRIVER::drawString(string, x, y, font);
     restoreLogger();
     return r;
 }
 
 int16_t tft_logger::drawCentreString(const String &string, int32_t x, int32_t y, uint8_t font) {
+#ifdef TRUCE_LVGL
+    if(truce::captureText(string,x,y))return string.length();
+#endif
     log_drawString(string, DRAWCENTRESTRING, x, y);
     int16_t r;
-    if (isSleeping) return string.length();
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return string.length();
     r = BRUCE_TFT_DRIVER::drawCentreString(string, x, y, font);
     restoreLogger();
     return r;
 }
 
 int16_t tft_logger::drawRightString(const String &string, int32_t x, int32_t y, uint8_t font) {
+#ifdef TRUCE_LVGL
+    if(truce::captureText(string,x,y))return string.length();
+#endif
     log_drawString(string, DRAWRIGHTSTRING, x, y);
     int16_t r;
-    if (isSleeping) return string.length();
+    if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) return string.length();
     r = BRUCE_TFT_DRIVER::drawRightString(string, x, y, font);
     restoreLogger();
     return r;
@@ -534,6 +620,9 @@ void tft_logger::log_print(String s) {
 }
 
 size_t tft_logger::print(const String &s) {
+#ifdef TRUCE_LVGL
+    if(truce::capturePrint(s))return s.length();
+#endif
     size_t totalPrinted = 0;
     int remaining = s.length();
     int offset = 0;
@@ -545,7 +634,11 @@ size_t tft_logger::print(const String &s) {
         String chunk = s.substring(offset, offset + chunkSize);
 
         log_print(chunk);
-        if (isSleeping) totalPrinted += chunk.length();
+        if (isSleeping
+#ifdef TRUCE_LVGL
+        || truce::captureDisplay()
+#endif
+    ) totalPrinted += chunk.length();
         else totalPrinted += BRUCE_TFT_DRIVER::print(chunk);
 
         offset += chunkSize;

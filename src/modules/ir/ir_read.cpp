@@ -8,6 +8,7 @@
  */
 
 #include "ir_read.h"
+#include "core/truce/runtime.h"
 #include "core/display.h"
 #include "core/mykeyboard.h"
 #include "core/sd_functions.h"
@@ -208,6 +209,12 @@ void IrRead::cls() {
 }
 
 void IrRead::display_banner() {
+#ifdef TRUCE_LVGL
+    truce::beginDataPanel("IR Read");
+    truce::operationSubtitle(_read_signal ? "Signal captured" : "Waiting for signal...");
+    padprintln("Signals captured: " + String(signals_read));
+    return;
+#endif
     cls();
     tft.setTextSize(FM);
     padprintln("IR Read");
@@ -219,6 +226,12 @@ void IrRead::display_banner() {
 }
 
 void IrRead::display_btn_options() {
+#ifdef TRUCE_LVGL
+    if(_emulate_mode)truce::operationControls("Salvar","Novo sinal","Enviar");
+    else if(_read_signal)truce::operationControls("Descartar","Salvar","Emular");
+    else truce::operationControls("",quickloop ? "Pular" : "",signals_read>0 ? "Salvar" : "");
+    return;
+#endif
     tft.println("");
     tft.println("");
     if (_emulate_mode) {

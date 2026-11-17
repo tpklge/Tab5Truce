@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 /**
  * @file rfid125.cpp
  * @author Rennan Cockles (https://github.com/rennancockles)
@@ -134,6 +135,12 @@ void RFID125::cls() {
 }
 
 void RFID125::display_banner() {
+#ifdef TRUCE_LVGL
+    truce::beginDataPanel("RFID 125kHz");
+    truce::operationSubtitle(_current_state==SAVE_MODE ? "SAVE MODE" : "READ MODE");
+    truce::operationControls("","","Modo");
+    return;
+#endif
     cls();
     tft.setTextSize(FM);
     padprintln("RFID 125kHz");

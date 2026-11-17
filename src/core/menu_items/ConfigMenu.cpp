@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #include "ConfigMenu.h"
 #include "../mykeyboard.h"
 #include "core/display.h"
@@ -66,9 +67,15 @@ void ConfigMenu::displayUIMenu() {
             {"Brightness",  [this]() { setBrightnessMenu(); }               },
             {"Dim Time",    [this]() { setDimmerTimeMenu(); }               },
             {"Orientation", [this]() { lambdaHelper(gsetRotation, true)(); }},
+#ifndef TRUCE_LVGL
             {"Menu Layout", [this]() { setMainMenuStyleMenu(); }            },
             {"UI Color",    [this]() { setUIColor(); }                      },
+#endif
+            #ifdef TRUCE_LVGL
+            {"UI Theme",    []() { truce::chooseTheme(); }},
+#else
             {"UI Theme",    [this]() { setTheme(); }                        },
+#endif
 #if defined(HAS_RESISTIVE_TOUCH)
             {"Calibrate Touch", []() { calibrateTouch(); }                  },
 #endif

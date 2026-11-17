@@ -1,4 +1,4 @@
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <WiFi.h>
 
 extern bool isConnectedWireguard;

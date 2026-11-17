@@ -1,0 +1,27 @@
+{
+  "name": "Oceano",
+  "background": "#0B1B2D",
+  "panel": "#17354D",
+  "text": "#F1F9FF",
+  "muted": "#B8D8ED",
+  "border": "#5D849D",
+  "accent": "#67D8EF",
+  "icons": {
+    "WiFi": "icons/ocean/wifi.png",
+    "BLE": "icons/ocean/bluetooth.png",
+    "RF": "icons/ocean/radio.png",
+    "NRF24": "icons/ocean/radio.png",
+    "LoRa": "icons/ocean/antenna.png",
+    "FM": "icons/ocean/radio.png",
+    "IR": "icons/ocean/remote.png",
+    "Ethernet": "icons/ocean/network.png",
+    "GPS": "icons/ocean/gps.png",
+    "RFID": "icons/ocean/card.png",
+    "Files": "icons/ocean/folder.png",
+    "JS Interpreter": "icons/ocean/script.png",
+    "Clock": "icons/ocean/clock.png",
+    "Others": "icons/ocean/apps.png",
+    "Wire Tools": "icons/ocean/wire.png",
+    "Config": "icons/ocean/settings.png"
+  }
+}

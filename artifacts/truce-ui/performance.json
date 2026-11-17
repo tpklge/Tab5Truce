@@ -1,0 +1,15 @@
+{
+  "baseline_first_menu_ms": 11219,
+  "measured_first_menu_ms": 2170,
+  "baseline_internal_free": 75004,
+  "measured_internal_free": 228212,
+  "baseline_largest_internal_block": 34804,
+  "measured_largest_internal_block": 180212,
+  "native_layout_scenarios": 812,
+  "native_simulated_taps": 1174,
+  "unchanged_status_redraws": 0,
+  "cached_focus_additional_sd_opens": 0,
+  "full_peripheral_validation": false,
+  "application_sha256": "90663d8d5cd8c924936622d78ea90a7249b02669f0c28edb4b2de80346c1ee31",
+  "unexpected_menu_selections_after_fix": 0
+}

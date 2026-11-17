@@ -13,7 +13,7 @@
 #include "core/mykeyboard.h"
 #include "core/sd_functions.h"
 #include "core/utils.h"
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <NimBLEDevice.h>
 #include <SD.h>
 #include <globals.h>

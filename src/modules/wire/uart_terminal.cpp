@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION)
 #include "uart_terminal.h"
 
@@ -113,7 +114,17 @@ static void uart_terminal_run() {
     String rxRun = ""; // bytes received since the last line terminator
     bool inputDirty = true;
 
+    auto renderArea = [&]() {
+#ifdef TRUCE_LVGL
+        truce::terminalWindow(area.linesBuffer,"> "+input);
+#else
+        area.draw(true);
+#endif
+    };
     auto drawInputLine = [&]() {
+#ifdef TRUCE_LVGL
+        renderArea();inputDirty=false;return;
+#endif
         tft.fillRect(BORDER_PAD_X, inputY, tftWidth - 2 * BORDER_PAD_X, LH, bruceConfig.bgColor);
         tft.setTextSize(FP);
         tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
@@ -157,7 +168,7 @@ static void uart_terminal_run() {
                 area.firstVisibleLine = (area.firstVisibleLine > extra) ? area.firstVisibleLine - extra : 0;
             }
             if (wasAtBottom) area.scrollToLine(area.getMaxLines());
-            area.draw();
+            renderArea();
         }
 
         // 2) Handle the user's input
@@ -186,7 +197,7 @@ static void uart_terminal_run() {
                 input = msg;
                 sent = true;
             }
-            area.draw(true); // modal overwrote the screen
+            renderArea(); // modal overwrote the screen
             inputDirty = true;
         }
 #endif
@@ -195,10 +206,10 @@ static void uart_terminal_run() {
         // 3) Scroll the history (Up/Down, Prev/Next; auto-follows while at the bottom)
         if (check(PrevPress) || check(UpPress)) {
             area.scrollUp();
-            area.draw();
+            renderArea();
         } else if (check(NextPress) || check(DownPress)) {
             area.scrollDown();
-            area.draw();
+            renderArea();
         }
 
         if (inputDirty) drawInputLine();

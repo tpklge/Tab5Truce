@@ -8,6 +8,7 @@ Thanks to @bmorcelli for his help doing a better code.
 */
 #if !defined(LITE_VERSION)
 #include "ui.h"
+#include "core/truce/runtime.h"
 #include "../wifi/sniffer.h"
 
 #define ROW_SIZE 40
@@ -26,9 +27,11 @@ uint8_t menu_current_cmd = 0;
 uint8_t menu_current_opt = 0;
 
 void initUi() {
+#ifndef TRUCE_LVGL
     tft.setTextSize(FP);
     tft.fillScreen(bruceConfig.bgColor);
     tft.setTextColor(bruceConfig.priColor);
+#endif
 
     display_w = tftWidth;
     display_h = tftHeight;
@@ -59,6 +62,9 @@ String getRssiBars(signed int rssi) {
 }
 
 void drawTime() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     tft.drawPixel(0, 0, 0);
     tft.fillRect(80, 0, display_w, canvas_top_h - 3, bruceConfig.bgColor);
     tft.setTextDatum(TR_DATUM);
@@ -73,6 +79,9 @@ void drawTime() {
 }
 
 void drawFooterData(uint8_t friends_run, uint8_t friends_tot, const String &last_friend_name, signed int rssi) {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     tft.drawPixel(0, 0, 0);
     tft.fillRect(0, canvas_bot_h + 1, display_w - 50, canvas_bot_h + 10, bruceConfig.bgColor);
     tft.setTextSize(FP);
@@ -95,6 +104,12 @@ void updateUi(bool show_toolbars) {
     String mood_phrase = getCurrentMoodPhrase();
     bool mood_broken = isCurrentMoodBroken();
 
+#ifdef TRUCE_LVGL
+    truce::panelFrame("Brucegotchi",mood_phrase,{"Expressão: "+mood_face,"Canal: "+String(ch),
+        "Capturas: "+String(num_HS),"Pares: "+String(getPwngridRunTotalPeers())+" / "+String(getPwngridTotalPeers()),
+        "Último par: "+getPwngridLastFriendName(),"RSSI: "+String(getPwngridClosestRssi())+" dBm"});
+    truce::operationControls("","","Menu","Sair");return;
+#endif
     // Draw header and footer
     if (show_toolbars) {
         drawTopCanvas();
@@ -116,6 +131,9 @@ void updateUi(bool show_toolbars) {
 }
 
 void drawTopCanvas() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     // prepare canvas
     tft.setTextSize(FP);
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
@@ -130,6 +148,9 @@ void drawTopCanvas() {
 }
 
 void drawBottomCanvas() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     // prepare canvas
     tft.setTextSize(FP);
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
@@ -142,6 +163,9 @@ void drawBottomCanvas() {
 }
 
 void drawMood(const String &face, const String &phrase, bool broken) {
+#ifdef TRUCE_LVGL
+    truce::panelFrame("Brucegotchi",phrase,{"Expressão: "+face});return;
+#endif
     // prepare canvas
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
 #if defined(STACKCHAN)

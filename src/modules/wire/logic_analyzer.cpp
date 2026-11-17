@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION)
 #include "wire_tools.h"
 
@@ -247,6 +248,24 @@ static void la_viewer() {
     std::vector<int8_t> colState((size_t)wpx + 1);
 
     auto render = [&]() {
+#ifdef TRUCE_LVGL
+        std::vector<std::vector<uint8_t>> lanes(nch,std::vector<uint8_t>(256));
+        for(uint8_t c=0;c<nch;++c) {
+            size_t edge=0;uint8_t level=s.initLevel[c];
+            for(int x=0;x<256;++x) {
+                const uint64_t tick=uint64_t(view0+span*x/255.0);
+                bool transition=false;
+                while(edge<s.edges[c].size() && (s.edges[c][edge]>>1)<=tick) {
+                    const uint8_t next=s.edges[c][edge++]&1;
+                    transition|=next!=level;level=next;
+                }
+                lanes[c][x]=transition?2:level;
+            }
+        }
+        truce::logicFrame(lanes,measCh,"GPIO "+String(s.pins[measCh])+" | Janela: "+la_fmt_time(uint64_t(span),s.resolution)+
+            " | Cursor: "+la_fmt_time(uint64_t(view0+span/2),s.resolution)+(s.truncated[measCh]?" | TRUNC":""));
+        return;
+#endif
         uint16_t fg = bruceConfig.priColor;
         uint16_t bg = bruceConfig.bgColor;
         uint16_t dim = blendColors(fg, bg, 70);

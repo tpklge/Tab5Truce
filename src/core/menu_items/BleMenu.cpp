@@ -1,5 +1,8 @@
 #include "BleMenu.h"
+#include "core/truce/runtime.h"
+#include <truce_hooks.h>
 #include "core/display.h"
+#include "core/radio_mem.h"
 #include "core/utils.h"
 #include "modules/badusb_ble/ducky_typer.h"
 #include "modules/ble/ble_common.h"
@@ -41,6 +44,22 @@ void BleMenu::optionsMenu() {
     options.push_back({"Presenter mode", [=]() { PresenterMode(hid_ble, true); }});
 #else
     options.push_back({"BLE Sniffer", [=]() { BLE_SnifferMenu(); }});
+#endif
+#ifdef TRUCE_LVGL
+    // Some legacy modules initialize NimBLE directly. Prepare the P4/C6
+    // transport at every BLE entry point before any module can touch the SDK.
+    for (auto &entry : options) {
+        if (entry.label == "Disconnect") continue;
+        auto operation = entry.operation;
+        entry.operation = [operation]() {
+            truce::panelFrame("Bluetooth","Preparando Bluetooth",{});truce::operationControls("","","","");truce::pumpOperation();
+            if (!radioHasMemForBle()) {
+                displayError(radioBleFailureMessage(), true);
+                return;
+            }
+            operation();
+        };
+    }
 #endif
     addOptionToMainMenu();
 

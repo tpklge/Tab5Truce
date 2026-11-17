@@ -1,0 +1,687 @@
+{
+  "common_border": "native LVGL panel",
+  "unknown_and_dynamic_titles": "native LVGL panel",
+  "menu_callback_default": "native LVGL panel",
+  "third_party_js_graphics": "script-owned drawing API",
+  "static_titled_sites": [
+    {
+      "source": "src/core/connect/file_sharing.cpp",
+      "line": 9,
+      "title": "SEND FILE"
+    },
+    {
+      "source": "src/core/connect/file_sharing.cpp",
+      "line": 25,
+      "title": "SEND FILE"
+    },
+    {
+      "source": "src/core/connect/file_sharing.cpp",
+      "line": 64,
+      "title": "RECEIVE FILE"
+    },
+    {
+      "source": "src/core/connect/file_sharing.cpp",
+      "line": 110,
+      "title": "RECEIVE FILE"
+    },
+    {
+      "source": "src/core/connect/serial_commands.cpp",
+      "line": 96,
+      "title": "CONFIRM COMMAND"
+    },
+    {
+      "source": "src/core/connect/serial_commands.cpp",
+      "line": 161,
+      "title": "RECEIVE COMMANDS"
+    },
+    {
+      "source": "src/core/i2c_finder.cpp",
+      "line": 42,
+      "title": "I2C Finder"
+    },
+    {
+      "source": "src/core/massStorage.cpp",
+      "line": 82,
+      "title": "Mass Storage"
+    },
+    {
+      "source": "src/core/sd_functions.cpp",
+      "line": 972,
+      "title": "FILE INFO"
+    },
+    {
+      "source": "src/core/wifi/webInterface.cpp",
+      "line": 276,
+      "title": "WebUI"
+    },
+    {
+      "source": "src/core/wifi/wg.cpp",
+      "line": 118,
+      "title": "WIREGUARD"
+    },
+    {
+      "source": "src/core/wifi/wg.cpp",
+      "line": 129,
+      "title": "WIREGUARD"
+    },
+    {
+      "source": "src/core/wifi/wifi_common.cpp",
+      "line": 112,
+      "title": "WiFi Connect"
+    },
+    {
+      "source": "src/modules/NRF24/nrf_jammer.cpp",
+      "line": 145,
+      "title": "NRF JAMMER"
+    },
+    {
+      "source": "src/modules/NRF24/nrf_mousejack.cpp",
+      "line": 604,
+      "title": "MOUSEJACK SCAN"
+    },
+    {
+      "source": "src/modules/NRF24/nrf_mousejack.cpp",
+      "line": 751,
+      "title": "INJECTING"
+    },
+    {
+      "source": "src/modules/NRF24/nrf_mousejack.cpp",
+      "line": 808,
+      "title": "DUCKYSCRIPT"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 3922,
+      "title": "BLE SNIFFER"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 3983,
+      "title": "BLE SNIFFER"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 4027,
+      "title": "CAPTURED PACKETS"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 4092,
+      "title": "PACKET DETAILS"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 5793,
+      "title": "BLE Suite"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 5819,
+      "title": "Confirm Attack"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 5845,
+      "title": "Confirm"
+    },
+    {
+      "source": "src/modules/ble/BLE_Suite.cpp",
+      "line": 5886,
+      "title": "BLE Suite"
+    },
+    {
+      "source": "src/modules/ble/ble_sniffer.cpp",
+      "line": 85,
+      "title": "BLE SNIFFER"
+    },
+    {
+      "source": "src/modules/ble/ble_sniffer.cpp",
+      "line": 183,
+      "title": "CAPTURED PACKETS"
+    },
+    {
+      "source": "src/modules/ble/ble_sniffer.cpp",
+      "line": 244,
+      "title": "PACKET DETAILS"
+    },
+    {
+      "source": "src/modules/ble/ble_spam.cpp",
+      "line": 537,
+      "title": "iBeacon"
+    },
+    {
+      "source": "src/modules/ethernet/ARPSpoofer.cpp",
+      "line": 78,
+      "title": "ARP Spoofing"
+    },
+    {
+      "source": "src/modules/ethernet/ARPoisoner.cpp",
+      "line": 63,
+      "title": "ARP Poisoning"
+    },
+    {
+      "source": "src/modules/ethernet/DHCPStarvation.cpp",
+      "line": 45,
+      "title": "DHCP Starvation"
+    },
+    {
+      "source": "src/modules/ethernet/MACFlooding.cpp",
+      "line": 46,
+      "title": "MAC Flooding"
+    },
+    {
+      "source": "src/modules/gps/gps_tracker.cpp",
+      "line": 125,
+      "title": "GPS Tracker"
+    },
+    {
+      "source": "src/modules/gps/wardriving.cpp",
+      "line": 171,
+      "title": "Wardriving"
+    },
+    {
+      "source": "src/modules/gps/wdgwars.cpp",
+      "line": 31,
+      "title": "WDG Upload"
+    },
+    {
+      "source": "src/modules/gps/wigle.cpp",
+      "line": 75,
+      "title": "Wigle Upload"
+    },
+    {
+      "source": "src/modules/others/ibutton.cpp",
+      "line": 32,
+      "title": "iButton"
+    },
+    {
+      "source": "src/modules/others/ibutton.cpp",
+      "line": 94,
+      "title": "iButton"
+    },
+    {
+      "source": "src/modules/others/ibutton.cpp",
+      "line": 260,
+      "title": "Write iButton"
+    },
+    {
+      "source": "src/modules/others/timer.cpp",
+      "line": 65,
+      "title": "Set a timer"
+    },
+    {
+      "source": "src/modules/others/timer.cpp",
+      "line": 228,
+      "title": "Timer finished!"
+    },
+    {
+      "source": "src/modules/rf/rf_jammer.cpp",
+      "line": 35,
+      "title": "RF JAMMER MODE"
+    },
+    {
+      "source": "src/modules/rf/rf_jammer.cpp",
+      "line": 119,
+      "title": "RF JAMMER"
+    },
+    {
+      "source": "src/modules/rf/rf_scan.cpp",
+      "line": 799,
+      "title": "Signal "
+    },
+    {
+      "source": "src/modules/rf/rf_send.cpp",
+      "line": 213,
+      "title": "RF Emulate"
+    },
+    {
+      "source": "src/modules/rfid/amiibo.cpp",
+      "line": 51,
+      "title": "AMIIBOLINK"
+    },
+    {
+      "source": "src/modules/rfid/chameleon.cpp",
+      "line": 189,
+      "title": "CHAMELEON"
+    },
+    {
+      "source": "src/modules/rfid/emv_reader.cpp",
+      "line": 212,
+      "title": "Read EMV Card"
+    },
+    {
+      "source": "src/modules/rfid/pn532ble.cpp",
+      "line": 264,
+      "title": "PN532 BLE"
+    },
+    {
+      "source": "src/modules/rfid/srix_tool.cpp",
+      "line": 44,
+      "title": "SRIX TOOL"
+    },
+    {
+      "source": "src/modules/rfid/srix_tool.cpp",
+      "line": 167,
+      "title": "SRIX TOOL"
+    },
+    {
+      "source": "src/modules/rfid/tag_o_matic.cpp",
+      "line": 211,
+      "title": "TAG-O-MATIC"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 437,
+      "title": "Station Deauth"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 714,
+      "title": "Deauth All"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 816,
+      "title": "Select AP"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 858,
+      "title": "Select Channel"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 883,
+      "title": "Deauth All"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 909,
+      "title": "Deauth List"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 1005,
+      "title": "Select AP"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 1087,
+      "title": "Scanning Clients"
+    },
+    {
+      "source": "src/modules/wifi/deauther.cpp",
+      "line": 1189,
+      "title": "Select Target"
+    },
+    {
+      "source": "src/modules/wifi/evil_portal.cpp",
+      "line": 127,
+      "title": "EVIL PORTAL"
+    },
+    {
+      "source": "src/modules/wifi/evil_portal.cpp",
+      "line": 429,
+      "title": "EVIL PORTAL"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1866,
+      "title": "SELECT TEMPLATE"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1876,
+      "title": "KARMA SETUP"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1884,
+      "title": "LOAD FROM"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1891,
+      "title": "BROWSE SD"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1912,
+      "title": "SELECTED"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1916,
+      "title": "KARMA SETUP"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1927,
+      "title": "BROWSE LITTLEFS"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1949,
+      "title": "SELECTED"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1953,
+      "title": "KARMA SETUP"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1967,
+      "title": "SELECT TEMPLATE"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 1974,
+      "title": "KARMA SETUP"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2559,
+      "title": "ENHANCED KARMA ATK"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2569,
+      "title": "ENHANCED KARMA ATK"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2623,
+      "title": "MODERN KARMA ATTACK"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2628,
+      "title": "KARMA SETUP"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2633,
+      "title": "ENHANCED KARMA ATK"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2651,
+      "title": "ENHANCED KARMA ATK"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 2786,
+      "title": "ADVANCED STATS"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 3000,
+      "title": "SSID DATABASE"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 3193,
+      "title": "BROADCAST STATS"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 3278,
+      "title": "KARMA STATS"
+    },
+    {
+      "source": "src/modules/wifi/karma_attack.cpp",
+      "line": 3311,
+      "title": "ENHANCED KARMA ATK"
+    },
+    {
+      "source": "src/modules/wifi/netcut.cpp",
+      "line": 268,
+      "title": "NetCut Scan"
+    },
+    {
+      "source": "src/modules/wifi/netcut.cpp",
+      "line": 478,
+      "title": "NETCUT ACTIVE"
+    },
+    {
+      "source": "src/modules/wifi/netcut.cpp",
+      "line": 796,
+      "title": "Device Info"
+    },
+    {
+      "source": "src/modules/wifi/netcut.cpp",
+      "line": 828,
+      "title": "NetCut ARP"
+    },
+    {
+      "source": "src/modules/wifi/responder.cpp",
+      "line": 194,
+      "title": "RESPONDER"
+    },
+    {
+      "source": "src/modules/wifi/responder.cpp",
+      "line": 573,
+      "title": "RESPONDER"
+    },
+    {
+      "source": "src/modules/wifi/responder.cpp",
+      "line": 587,
+      "title": "RESPONDER"
+    },
+    {
+      "source": "src/modules/wifi/responder.cpp",
+      "line": 603,
+      "title": "RESPONDER"
+    },
+    {
+      "source": "src/modules/wifi/sdr.cpp",
+      "line": 620,
+      "title": "SDR"
+    },
+    {
+      "source": "src/modules/wifi/sniffer.cpp",
+      "line": 1148,
+      "title": "pcap sniffer"
+    },
+    {
+      "source": "src/modules/wifi/sniffer.cpp",
+      "line": 1369,
+      "title": "pcap sniffer"
+    },
+    {
+      "source": "src/modules/wifi/socks4_proxy.cpp",
+      "line": 90,
+      "title": "SOCKS4 PROXY"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 25,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 55,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 61,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 70,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 109,
+      "title": "TCP CLIENT"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 128,
+      "title": "TCP CLIENT"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 133,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/tcp_utils.cpp",
+      "line": 141,
+      "title": "LISTEN TCP"
+    },
+    {
+      "source": "src/modules/wifi/wifi_atks.cpp",
+      "line": 377,
+      "title": "Deauth Flood"
+    },
+    {
+      "source": "src/modules/wifi/wifi_atks.cpp",
+      "line": 392,
+      "title": "Deauth Flood"
+    },
+    {
+      "source": "src/modules/wifi/wifi_atks.cpp",
+      "line": 576,
+      "title": "Handshake Capture"
+    },
+    {
+      "source": "src/modules/wifi/wifi_atks.cpp",
+      "line": 888,
+      "title": "WiFi: Beacon SPAM"
+    },
+    {
+      "source": "src/modules/wifi/wifi_atks.cpp",
+      "line": 922,
+      "title": "WiFi: Beacon SPAM"
+    },
+    {
+      "source": "src/modules/wifi/wifi_recover.cpp",
+      "line": 938,
+      "title": "WiFi Password Recover"
+    },
+    {
+      "source": "src/modules/wifi/wifi_recover.cpp",
+      "line": 977,
+      "title": "WiFi Password Recover"
+    },
+    {
+      "source": "src/modules/wifi/wifi_recover.cpp",
+      "line": 1090,
+      "title": "WiFi Password Cracker"
+    },
+    {
+      "source": "src/modules/wire/jtag_scan.cpp",
+      "line": 135,
+      "title": "JTAG IDCODE"
+    },
+    {
+      "source": "src/modules/wire/spi_bus.cpp",
+      "line": 147,
+      "title": "SPI Console"
+    },
+    {
+      "source": "src/modules/wire/sump_server.cpp",
+      "line": 110,
+      "title": "SUMP Mode"
+    },
+    {
+      "source": "src/modules/wire/uart_terminal.cpp",
+      "line": 99,
+      "title": "UART Terminal"
+    }
+  ],
+  "tested_titles": [
+    "ADVANCED STATS",
+    "AMIIBOLINK",
+    "ARP Poisoning",
+    "ARP Spoofing",
+    "Analisador lógico",
+    "Auto Clicker",
+    "BLE SNIFFER",
+    "BLE Suite",
+    "BROADCAST STATS",
+    "BROWSE LITTLEFS",
+    "BROWSE SD",
+    "CAPTURED PACKETS",
+    "CHAMELEON",
+    "CONFIRM COMMAND",
+    "Confirm",
+    "Confirm Attack",
+    "Continuidade: pinos",
+    "DHCP Starvation",
+    "DUCKYSCRIPT",
+    "Deauth All",
+    "Deauth Flood",
+    "Deauth List",
+    "Device Info",
+    "ENHANCED KARMA ATK",
+    "EVIL PORTAL",
+    "FILE INFO",
+    "GPS Tracker",
+    "Handshake Capture",
+    "I2C Finder",
+    "INJECTING",
+    "JTAG IDCODE",
+    "KARMA SETUP",
+    "KARMA STATS",
+    "LISTEN TCP",
+    "LOAD FROM",
+    "LoRa",
+    "MAC Flooding",
+    "MODERN KARMA ATTACK",
+    "MOUSEJACK SCAN",
+    "Mass Storage",
+    "NETCUT ACTIVE",
+    "NRF JAMMER",
+    "NetCut ARP",
+    "NetCut Scan",
+    "PACKET DETAILS",
+    "PN532 BLE",
+    "RECEIVE COMMANDS",
+    "RECEIVE FILE",
+    "RESPONDER",
+    "RF Emulate",
+    "RF JAMMER",
+    "RF JAMMER MODE",
+    "Read EMV Card",
+    "SDR",
+    "SELECT TEMPLATE",
+    "SELECTED",
+    "SEND FILE",
+    "SOCKS4 PROXY",
+    "SPI Console",
+    "SRIX TOOL",
+    "SSID DATABASE",
+    "SUMP Mode",
+    "Scanning Clients",
+    "Select AP",
+    "Select Channel",
+    "Select Target",
+    "Set a timer",
+    "Signal ",
+    "Station Deauth",
+    "TAG-O-MATIC",
+    "TCP CLIENT",
+    "Timer finished!",
+    "Título dinâmico: dispositivo 01:23:45:67:89:AB",
+    "UART Terminal",
+    "WDG Upload",
+    "WIREGUARD",
+    "Wardriving",
+    "WebUI",
+    "WiFi Connect",
+    "WiFi Password Cracker",
+    "WiFi Password Recover",
+    "WiFi: Beacon SPAM",
+    "Wigle Upload",
+    "Write iButton",
+    "iBeacon",
+    "iButton",
+    "pcap sniffer"
+  ]
+}

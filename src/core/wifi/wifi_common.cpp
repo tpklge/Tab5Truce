@@ -1,3 +1,5 @@
+#include "core/truce/runtime.h"
+#include <truce_hooks.h>
 #include "core/wifi/wifi_common.h"
 #include "core/display.h"
 #include "core/mykeyboard.h"
@@ -117,6 +119,10 @@ bool _connectToWifiNetwork(const String &ssid, const String &pwd, int32_t channe
 
     int i = 1;
     while (!WiFi.isConnected()) {
+#ifdef TRUCE_LVGL
+        truce::panelFrame("Wi-Fi","Conectando à rede",{"Rede: "+ssid,"Tentativa: "+String(i)+"/20"});
+        truce::operationControls("","","","");truce::pumpOperation();
+#endif
         if (tft.getCursorX() >= tftWidth - 12) {
             padprintln("");
             padprint("");
@@ -172,6 +178,9 @@ void wifiDisconnect() {
 
 bool wifiConnectMenu(wifi_mode_t mode) {
     if (WiFi.isConnected()) return false; // safeguard
+#ifdef TRUCE_LVGL
+    truce::panelFrame("Wi-Fi","Preparando Wi-Fi",{});truce::operationControls("","","","");truce::pumpOperation();
+#endif
 
     if (FORCE_RADIO_TEARDOWN_ON_SWITCH) {
         stopBLEStack();
@@ -204,7 +213,11 @@ bool wifiConnectMenu(wifi_mode_t mode) {
 
             bool refresh_scan = false;
             do {
+#ifdef TRUCE_LVGL
+                truce::panelFrame("Wi-Fi","Buscando redes",{});truce::operationControls("","","","");truce::pumpOperation();
+#else
                 displayTextLine("Scanning..");
+#endif
                 nets = WiFi.scanNetworks();
 
                 String selSsid = "";
@@ -242,6 +255,9 @@ bool wifiConnectMenu(wifi_mode_t mode) {
                         String optionText = encryptionPrefix + ssid + "(" + String(rssi) + "|" +
                                             encryptionTypeStr + "|ch." + String(ch) + ")";
 
+#ifdef TRUCE_LVGL
+                        optionText=(ssid.isEmpty()?String("Rede oculta"):ssid)+"\n"+String(rssi)+" dBm • "+encryptionTypeStr+" • Canal "+String(ch);
+#endif
                         options.push_back(
                             {optionText.c_str(),
                              [&selSsid, &selEnc, &selCh, &selBssid, ssid, encryptionType, ch, bssidArr]() {
@@ -257,7 +273,11 @@ bool wifiConnectMenu(wifi_mode_t mode) {
                 options.push_back({"Hidden SSID", [&selHidden]() { selHidden = true; }});
                 addOptionToMainMenu();
 
+#ifdef TRUCE_LVGL
+                loopOptions(options,MENU_TYPE_SUBMENU,"Redes Wi-Fi");
+#else
                 loopOptions(options);
+#endif
                 options.clear();
 
                 if (returnToMenu) {

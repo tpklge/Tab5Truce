@@ -32,7 +32,11 @@ std::vector<FileList> fileList;
 ***************************************************************************************/
 bool setupLittleFS(uint8_t maxFiles) {
     if (maxFiles < 1) { maxFiles = 1; }
+#ifdef TRUCE_SD_ONLY
+    return false;
+#else
     return LittleFS.begin(false, "/littlefs", maxFiles);
+#endif
 }
 
 /***************************************************************************************
@@ -49,6 +53,9 @@ void closeLittleFS() {
 ** Description:   Start SD Card
 ***************************************************************************************/
 bool setupSdCard(uint8_t maxFiles) {
+#ifdef TRUCE_SD_ONLY
+    if (maxFiles < 12) maxFiles = 12;
+#endif
     if (maxFiles < 1) { maxFiles = 1; }
 #ifndef USE_SD_MMC
     if (bruceConfigPins.SDCARD_bus.sck < 0) {
@@ -200,6 +207,9 @@ bool renameFile(FS fs, String path, String filename) {
 ** Description:   copy file from SD or LittleFS to LittleFS or SD
 ***************************************************************************************/
 bool copyToFs(FS from, FS to, String path, bool draw) {
+#ifdef TRUCE_SD_ONLY
+    if (from.mountpoint() && to.mountpoint() && !strcmp(from.mountpoint(), to.mountpoint())) return true;
+#endif
     // Using Global Buffer
     bool result = false;
     if (!sdcardMounted) {
@@ -611,7 +621,9 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
     String PreFolder = rootPath;
     tft.drawPixel(0, 0, 0);
     tft.fillScreen(bruceConfig.bgColor); // TODO: Does only the T-Embed CC1101 need this?
+#ifndef TRUCE_LVGL
     tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+#endif
     if (&fs == &SD) {
         if (!setupSdCard()) {
             displayError("Fail Mounting SD", true);
@@ -644,7 +656,9 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
 
         if (strcmp(PreFolder.c_str(), Folder.c_str()) != 0 || reload) {
             tft.fillScreen(bruceConfig.bgColor);
-            tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+        #ifndef TRUCE_LVGL
+    tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+#endif
             Serial.println("reload to read: " + Folder);
             readFs(fs, Folder, allowed_ext);
             rebuildSdOptions();
@@ -656,7 +670,7 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
             readFs(fs, Folder, allowed_ext);
             rebuildSdOptions();
         }
-        index = loopOptions(sdOptions, MENU_TYPE_REGULAR, "", index, false, true, PAGE_JUMP_SIZE, false);
+        index = loopOptions(sdOptions, MENU_TYPE_REGULAR, Folder.c_str(), index, false, true, PAGE_JUMP_SIZE, false);
 
         if (index < 0) { // ESC
         BACK_FOLDER:
@@ -691,7 +705,9 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
                 options.push_back({"Close Menu", [&]() { yield(); }});
                 options.push_back({"Main Menu", [&]() { exit = true; }});
                 loopOptions(options);
-                tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+            #ifndef TRUCE_LVGL
+    tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+#endif
                 reload = true;
             } else {
                 goto BACK_FOLDER;
@@ -709,7 +725,9 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
                     {"Main Menu", [&]() { exit = true; }},
                 };
                 loopOptions(options);
-                tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+            #ifndef TRUCE_LVGL
+    tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+#endif
                 reload = true;
             } else {
                 Folder = Folder + (Folder == "/" ? "" : "/") + fileList[index].filename;
@@ -864,7 +882,9 @@ String loopSD(FS &fs, bool filePicker, const String &allowed_ext, String rootPat
             options.push_back({"Close Menu", [&]() { yield(); }});
             options.push_back({"Main Menu", [&]() { exit = true; }});
             loopOptions(options);
-            tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+        #ifndef TRUCE_LVGL
+    tft.drawRoundRect(5, 5, tftWidth - 10, tftHeight - 10, 5, bruceConfig.priColor);
+#endif
             reload = true;
         }
     }
@@ -892,6 +912,9 @@ void viewFile(FS &fs, const String &filepath) {
 **  Check if there are more then 4096 bytes available for storage
 **********************************************************************/
 bool checkLittleFsSize() {
+#ifdef TRUCE_SD_ONLY
+    return false;
+#endif
     if ((LittleFS.totalBytes() - LittleFS.usedBytes()) < 4096) {
         displayError("LittleFS is Full", true);
         return false;
@@ -902,7 +925,13 @@ bool checkLittleFsSize() {
 **  Function: checkLittleFsSize
 **  Check if there are more then 4096 bytes available for storage
 **********************************************************************/
-bool checkLittleFsSizeNM() { return (LittleFS.totalBytes() - LittleFS.usedBytes()) >= 4096; }
+bool checkLittleFsSizeNM() {
+#ifdef TRUCE_SD_ONLY
+    return false;
+#else
+    return (LittleFS.totalBytes() - LittleFS.usedBytes()) >= 4096;
+#endif
+}
 
 /*********************************************************************
 **  Function: getFsStorage

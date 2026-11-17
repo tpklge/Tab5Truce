@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION) && !defined(DISABLE_INTERPRETER)
 #include "interpreter.h"
 #include "core/display.h"
@@ -41,6 +42,9 @@ void interpreterHandler(void *pvParameters) {
 
     while (interpreter_state != 2) { vTaskDelay(pdMS_TO_TICKS(500)); }
 
+    #ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
     tft.fillScreen(TFT_BLACK);
 #if defined(HAS_TOUCH)
     // Script drawing uses tftHeight, which excludes the reserved touch footer.

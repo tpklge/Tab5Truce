@@ -199,7 +199,11 @@ public:
         const char *wiringQrUrl = nullptr;
     };
 
+#ifdef TRUCE_SD_ONLY
+    const char *filepath = "/config/brucePins.conf";
+#else
     const char *filepath = "/brucePins.conf";
+#endif
 
     // SPI Buses
 

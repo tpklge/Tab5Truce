@@ -1,3 +1,4 @@
+#include "truce/runtime.h"
 #include "settings.h"
 #include "core/led_control.h"
 #include "core/wifi/wifi_common.h"
@@ -115,6 +116,10 @@ int gsetRotation(bool set) {
 **  boards, Next/Prev to step by 5%, Sel to apply, Esc to cancel)
 **********************************************************************/
 void setBrightnessMenu() {
+#ifdef TRUCE_LVGL
+    truce::brightness();
+    return;
+#endif
     returnToMenu = false;
 
     int original = bruceConfig.bright;
@@ -1058,6 +1063,11 @@ void runClockLoop(bool showMenuHint) {
 #endif
             Serial.print("Current time: ");
             Serial.println(timeStr);
+#ifdef TRUCE_LVGL
+            truce::dialFrame("Relógio",timeStr,"Horário local",(atoi(timeStr+6)%60)*1000/60);
+            truce::graphicStatus("Relógio");
+            truce::operationControls("","",showMenuHint?"Opções":"Fechar","Sair");
+#else
             tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
             tft.drawRect(
                 BORDER_PAD_X,
@@ -1091,6 +1101,7 @@ void runClockLoop(bool showMenuHint) {
                 );
                 hintVisible = false;
             }
+#endif
             tmp = millis();
         }
 
@@ -1115,6 +1126,9 @@ void runClockLoop(bool showMenuHint) {
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
 }
 
 /*********************************************************************

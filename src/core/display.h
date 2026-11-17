@@ -4,7 +4,7 @@
 #include "core/serialcmds.h"
 #include "sd_functions.h" // to catch FileList Struct
 #include <FS.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <SD.h>
 #include <globals.h>
 #define BORDER_OFFSET_FROM_SCREEN_EDGE 5

@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <FS.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <SD.h>
 #include <set>
 

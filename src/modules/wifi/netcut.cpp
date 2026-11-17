@@ -15,7 +15,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/tcpip.h"
 #include <ArduinoJson.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <esp_wifi.h>
 
 // Forward declarations

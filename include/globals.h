@@ -2,6 +2,7 @@
 #define __GLOBALS__
 
 #include <precompiler_flags.h>
+#include <truce_hooks.h>
 
 #include <interface.h>
 
@@ -17,7 +18,7 @@
 #include "core/startup_app.h"
 #include <Arduino.h>
 #include <ESP32Time.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <NTPClient.h>
 #include <SPI.h>
 #include <functional>
@@ -243,6 +244,9 @@ void inputLock();
 void inputUnlock();
 
 extern inline bool check(volatile bool &btn, bool resetButtonStatus = true) {
+#ifdef TRUCE_LVGL
+    truce::pumpOperation();
+#endif
     if (!btn) return false;
 #ifdef HAS_ENCODER
     // NextPress/PrevPress here are rotary-encoder-derived, not raw mechanical

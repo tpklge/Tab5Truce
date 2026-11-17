@@ -7,7 +7,7 @@
 #ifdef USB_as_HID
 
 #include "globals.h"
-#include <Preferences.h>
+#include "core/truce/preferences.h"
 #include <USB.h>
 #include <USBHID.h>
 #include <esp_system.h>

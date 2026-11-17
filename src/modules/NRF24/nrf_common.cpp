@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #include "nrf_common.h"
 #include "../../core/bus_HAL.h"
 #include "../../core/mykeyboard.h"
@@ -7,6 +8,9 @@ HardwareSerial NRFSerial = HardwareSerial(2); // Uses UART2 for External NRF's
 SPIClass *NRFSPI;
 
 void nrf_info() {
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("NRF24");
+    #endif
     tft.fillScreen(bruceConfig.bgColor);
     tft.setTextSize(FM);
     tft.setTextColor(TFT_RED, bruceConfig.bgColor);

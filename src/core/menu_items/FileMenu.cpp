@@ -10,7 +10,9 @@
 void FileMenu::optionsMenu() {
     options.clear();
     if (setupSdCard()) options.push_back({"SD Card", [=]() { loopSD(SD); }});
+#ifndef TRUCE_SD_ONLY
     options.push_back({"LittleFS", [=]() { loopSD(LittleFS); }});
+#endif
     options.push_back({"WebUI", loopOptionsWebUi});
 
 #if !defined(LITE_VERSION)
@@ -26,7 +28,7 @@ void FileMenu::optionsMenu() {
     }});
 #endif
 
-#if defined(SOC_USB_OTG_SUPPORTED)
+#if defined(SOC_USB_OTG_SUPPORTED) && !defined(TRUCE_SD_ONLY)
     options.push_back({"Mass Storage", [=]() { MassStorage(); }});
 #endif
     addOptionToMainMenu();

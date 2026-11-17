@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 /**
  * Advanced IR Jammer Implementation
  *
@@ -398,6 +399,17 @@ void renderJammerUI(JammerState &state) {
     // Create blinking effect for active status indicator
     bool blinkState = (currentMillis % 600 < 300);
     state.lastUIUpdate = currentMillis;
+#ifdef TRUCE_LVGL
+    truce::panelFrame("Infravermelho",state.jamming_active?"Em execução":"Pausado",
+        {"Ajuste selecionado: "+String(state.settingIndex+1),"Modo: "+String(int(state.currentMode)),
+         "Frequência: "+String(IR_FREQUENCIES[state.current_freq_idx])+" Hz",
+         "Densidade: "+String(state.jamDensity),"Mark: "+String(state.markTiming)+" us",
+         "Space: "+String(state.spaceTiming)+" us","Duty cycle: "+String(state.dutyCycle)+"%",
+         "Contagem: "+String(state.jamCount)});
+    truce::operationControls("Diminuir","Aumentar","Próximo ajuste","Sair");
+    state.redraw=false;return;
+#endif
+
 
     // Calculate layout dimensions based on screen size
     int contentWidth = tftWidth - 20;

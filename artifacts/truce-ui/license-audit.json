@@ -1,0 +1,11 @@
+{
+  "verified_on": "2026-11-16",
+  "upstream": "https://github.com/BruceDevices/Firmware",
+  "license_url": "https://raw.githubusercontent.com/BruceDevices/Firmware/main/LICENSE",
+  "declared_license": "AGPL-3.0-or-later",
+  "declaration_source": "THIRD_PARTY.md",
+  "local_license_matches_upstream": true,
+  "license_sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+  "notices": "NOTICE.md",
+  "original_readme": "README_BRUCE.md"
+}

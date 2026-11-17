@@ -1,0 +1,15 @@
+{
+  "chip_variant": "esp32p4_es",
+  "supported_chip_revision": "0.1\u20131.99",
+  "partitions": [
+    "factory"
+  ],
+  "nvs_partitions": 0,
+  "filesystem_partitions": 0,
+  "coredump_partitions": 0,
+  "initialized_nvs": false,
+  "local_flash_write_entry_points": "blocked by linker guards",
+  "filesystem_root": "/truce",
+  "legacy_filesystem": "SD facade",
+  "hardware_tested": false
+}

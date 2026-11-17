@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #include "record.h"
 #include "protocols/rf_config.h"
 #include "protocols/rf_decoder.h"
@@ -214,11 +215,17 @@ void rf_raw_record_create(RawRecording &recorded, bool &returnToMenu) {
     bool rssiFeature = false;
     rssiFeature = bruceConfigPins.rfModule == CC1101_SPI_MODULE;
 
+#ifdef TRUCE_LVGL
+    truce::operationTitle("RF Record");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     drawMainBorder();
 
     if (rssiFeature) rf_range_selection(bruceConfigPins.rfFreq);
 
+#ifdef TRUCE_LVGL
+    truce::operationTitle("RF Record");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     drawMainBorder();
     rf_raw_record_draw(status);

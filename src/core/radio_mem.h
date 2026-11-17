@@ -17,6 +17,7 @@
 */
 #include <esp_heap_caps.h>
 #include <stddef.h>
+#include <truce_radio_policy.h>
 #include "core/wifi/wifi_common.h"
 #include <WiFi.h>
 
@@ -57,6 +58,13 @@ static inline bool radioHasMemForWifi() {
 }
 
 static inline bool radioHasMemForBle() {
+#if defined(TRUCE_LVGL) && defined(CONFIG_IDF_TARGET_ESP32P4)
+    if(!truce::prepareHostedBle())return false;
+#endif
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+    const uint32_t caps=MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT;
+    if(truce::hostedBleHeadroom(heap_caps_get_free_size(caps),heap_caps_get_largest_free_block(caps)))return true;
+#endif
     // return true; // uncomment to disable it
     if (radioLargestDmaBlock() >= RADIO_BLE_MIN_DMA_BLOCK) return true;
 
@@ -92,4 +100,11 @@ static inline bool radioHasMemForBle() {
     return false;
 }
 
+static inline const char *radioBleFailureMessage() {
+#if defined(TRUCE_LVGL) && defined(CONFIG_IDF_TARGET_ESP32P4)
+    return truce::hostedBleFailure();
+#else
+    return "Low RAM: free WiFi/SD first";
+#endif
+}
 #endif // __RADIO_MEM_H__

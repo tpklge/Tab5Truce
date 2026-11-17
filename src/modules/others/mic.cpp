@@ -1,4 +1,6 @@
 #include "mic.h"
+#include "core/truce/runtime.h"
+#include <truce_hooks.h>
 #if defined(HAS_MICROPHONE)
 #include "core/mykeyboard.h"
 #include "core/powerSave.h"
@@ -216,7 +218,13 @@ void mic_test_one_task() {
     const int displayY = MARGIN_Y;
 
     // Alloc framebuffer
-    uint16_t *frameBuffer;
+    uint16_t *frameBuffer=nullptr;
+#ifdef TRUCE_LVGL
+    if(!truce::beginSpectrum("Espectro do microfone",true))return;
+    truce::operationControls("","","Parar","Sair");
+    const int ticks[]={0,128,255};const String labels[]={"0 Hz","2,9 kHz","5,8 kHz"};
+    truce::spectrumRuler(ticks,labels,3,-1);
+#else
     if (psramFound()) frameBuffer = (uint16_t *)ps_malloc(displayWidth * displayHeight * sizeof(uint16_t));
     else {
         closeSdCard();
@@ -229,6 +237,7 @@ void mic_test_one_task() {
         return;
     }
 
+#endif
     // Border around the spectrogram
     tft.drawRect(displayX - 2, displayY - 2, displayWidth + 4, displayHeight + 4, bruceConfig.priColor);
 
@@ -256,6 +265,13 @@ void mic_test_one_task() {
 
         fft_destroy(plan);
 
+#ifdef TRUCE_LVGL
+        uint8_t envelope[256];
+        const int row=(posData+HISTORY_LEN-1)%HISTORY_LEN;
+        for(int x=0;x<256;++x){const int bin=1+x*(SPECTRUM_HEIGHT-2)/255;envelope[x]=fftHistory[row*SPECTRUM_HEIGHT+SPECTRUM_HEIGHT-bin]*100/255;}
+        truce::spectrumTrace(envelope,nullptr,1,0);truce::spectrumRow(envelope);
+        truce::graphicStatus("Microfone • amostragem de 48 kHz");
+#else
         // ===== RENDER WITH SCALING =====
         for (int y = 0; y < displayHeight; y++) {
             // Original spectrum y-display y-map
@@ -277,6 +293,7 @@ void mic_test_one_task() {
         }
 
         tft.pushImage(displayX, displayY, displayWidth, displayHeight, frameBuffer);
+#endif
         wakeUpScreen();
         if (check(SelPress) || check(EscPress)) break;
         vTaskDelay(pdMS_TO_TICKS(1));
@@ -284,6 +301,9 @@ void mic_test_one_task() {
     i2s_channel_disable(i2s_chan);
 
     free(frameBuffer);
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
 }
 
 bool isGPIOOutput(gpio_num_t gpio) {

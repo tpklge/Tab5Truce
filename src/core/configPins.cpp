@@ -1,3 +1,4 @@
+#include <truce_transaction.h>
 #include "configPins.h"
 #include "esp_mac.h"
 #include "sd_functions.h"
@@ -335,6 +336,9 @@ void BruceConfigPins::loadFile(JsonDocument &jsonDoc, bool checkFS) {
         else return;
     }
 
+#ifdef TRUCE_SD_ONLY
+    truce::recover(*fs, String(filepath));
+#endif
     if (!fs->exists(filepath)) return createFile();
 
     File file;
@@ -350,7 +354,9 @@ void BruceConfigPins::loadFile(JsonDocument &jsonDoc, bool checkFS) {
     }
     file.close();
 
+#ifndef TRUCE_SD_ONLY
     serializeJsonPretty(jsonDoc, Serial);
+#endif
 }
 
 void BruceConfigPins::fromFile(bool checkFS) {
@@ -364,11 +370,23 @@ void BruceConfigPins::fromFile(bool checkFS) {
 void BruceConfigPins::createFile() {
     JsonDocument jsonDoc;
     toJson(jsonDoc.to<JsonObject>());
+#ifndef TRUCE_SD_ONLY
     serializeJsonPretty(jsonDoc, Serial);
+#endif
 
     // Open file for writing
+#ifdef TRUCE_SD_ONLY
+    FS *fs;
+    if (!getFsStorage(fs)) return;
+#else
     FS *fs = &LittleFS;
+#endif
+#ifdef TRUCE_SD_ONLY
+    String tempPath = String(filepath) + ".tmp";
+    File file = fs->open(tempPath, FILE_WRITE);
+#else
     File file = fs->open(filepath, FILE_WRITE);
+#endif
     if (!file) {
         log_e("Failed to open config file");
         file.close();
@@ -376,14 +394,21 @@ void BruceConfigPins::createFile() {
     };
 
     // Serialize JSON to file
-    if (serializeJsonPretty(jsonDoc, file) < 5) log_e("Failed to write config file");
+    const bool saved = serializeJsonPretty(jsonDoc, file) == measureJsonPretty(jsonDoc);
+    if (!saved) log_e("Failed to write config file");
     else log_i("config file written successfully");
 
+    file.flush();
     file.close();
+#ifdef TRUCE_SD_ONLY
+    if (saved) truce::commit(*fs, tempPath, String(filepath));
+#endif
     jsonDoc.clear();
 
     // don't try to mount SD Card if not previously mounted
+#ifndef TRUCE_SD_ONLY
     if (sdcardMounted) copyToFs(LittleFS, SD, filepath, false);
+#endif
 }
 
 void BruceConfigPins::saveFile() {
@@ -396,28 +421,58 @@ void BruceConfigPins::saveFile() {
     toJson(jsonDoc.as<JsonObject>());
 
     // Open file for writing
+#ifdef TRUCE_SD_ONLY
+    FS *fs;
+    if (!getFsStorage(fs)) return;
+#else
     FS *fs = &LittleFS;
+#endif
+#ifdef TRUCE_SD_ONLY
+    String tempPath = String(filepath) + ".tmp";
+    File file = fs->open(tempPath, FILE_WRITE);
+#else
     File file = fs->open(filepath, FILE_WRITE);
+#endif
     if (!file) {
         log_e("Failed to open config file");
         return;
     };
 
     // Serialize JSON to file
-    if (serializeJsonPretty(jsonDoc, file) < 5) log_e("Failed to write config file");
+    const bool saved = serializeJsonPretty(jsonDoc, file) == measureJsonPretty(jsonDoc);
+    if (!saved) log_e("Failed to write config file");
     else log_i("config file written successfully");
 
+    file.flush();
     file.close();
+#ifdef TRUCE_SD_ONLY
+    if (saved) truce::commit(*fs, tempPath, String(filepath));
+#endif
     jsonDoc.clear();
     // don't try to mount SD Card if not previously mounted
+#ifndef TRUCE_SD_ONLY
     if (sdcardMounted) copyToFs(LittleFS, SD, filepath, false);
+#endif
 }
 
 void BruceConfigPins::factoryReset() {
+#ifdef TRUCE_SD_ONLY
+    FS *fs;
+    if (!getFsStorage(fs)) return;
+#else
     FS *fs = &LittleFS;
+#endif
+#ifdef TRUCE_SD_ONLY
+    fs->remove(String(filepath) + ".bak");
+    fs->remove(String(filepath) + ".reset");
+    fs->rename(String(filepath), String(filepath) + ".reset");
+#else
     fs->rename(String(filepath), "/bak." + String(filepath).substring(1));
+#endif
     // don't try to mount SD Card if not previously mounted
+#ifndef TRUCE_SD_ONLY
     if (sdcardMounted) SD.rename(String(filepath), "/bak." + String(filepath).substring(1));
+#endif
 }
 
 void BruceConfigPins::validateConfig() {

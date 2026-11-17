@@ -1,6 +1,7 @@
 // Senape3000 (Really Ugly) Audio Player UI
 
 #include "audio_player.h"
+#include "core/truce/runtime.h"
 #if defined(HAS_SPEAKER)
 #include "core/mykeyboard.h"
 #include "core/settings.h"
@@ -168,6 +169,9 @@ void drawButton(int x, int y, int size, IconType icon, bool selected, bool activ
 
 // Draw Styled Progress Bar
 void drawProgressBar(int x, int y, int width, int height, unsigned long position, unsigned long duration) {
+#ifdef TRUCE_LVGL
+    return; // The native player owns its LVGL progress widget.
+#endif
     uint16_t barBg = TFT_DARKGREY;
     uint16_t barFill = bruceConfig.priColor;
 
@@ -189,6 +193,12 @@ void drawProgressBar(int x, int y, int width, int height, unsigned long position
 }
 // Volume control popup
 bool showVolumeControl(uint8_t &currentVolume) {
+#ifdef TRUCE_LVGL
+    const int chosen=truce::selectValue("Volume",currentVolume,0,100,[](int value){setAudioPlaybackVolume(value);});
+    if(chosen<0){setAudioPlaybackVolume(currentVolume);return false;}
+    const bool nativeChanged=chosen!=currentVolume;currentVolume=chosen;
+    setAudioPlaybackVolume(currentVolume);return nativeChanged;
+#endif
     const int BAR_WIDTH = (tftWidth > 200) ? 60 : 40;
     const int BAR_HEIGHT = (tftHeight > 200) ? 140 : 100;
     const int BAR_X = (tftWidth - BAR_WIDTH) / 2;
@@ -299,9 +309,20 @@ void musicPlayerUI(FS *fs, const String &filepath) {
     unsigned long duration = 0;
     uint8_t currentVolume = bruceConfig.soundVolume;
 
+#ifdef TRUCE_LVGL
+    auto drawNative=[&]() {
+        const auto info=getAudioPlaybackInfo();
+        const String state=player.isPaused?"Pausado":info.state==PLAYBACK_PLAYING?"Reproduzindo":"Parado";
+        const int progress=duration?std::min<uint64_t>(1000,uint64_t(currentPosition)*1000/duration):0;
+        truce::mediaFrame(player.filename,state,formatTime(currentPosition),duration?formatTime(duration):"--:--",progress,currentVolume,player.loopEnabled,selectedButton);
+    };
+#endif
     // --- Draw functions ---
 
     auto drawHeader = [&]() {
+#ifdef TRUCE_LVGL
+        drawNative();return;
+#endif
         tft.fillRect(0, 0, tftWidth, ui.HEADER_HEIGHT, bruceConfig.priColor);
         tft.setTextColor(bruceConfig.bgColor, bruceConfig.priColor);
         tft.setTextSize(ui.TEXT_SIZE_LARGE);
@@ -313,6 +334,9 @@ void musicPlayerUI(FS *fs, const String &filepath) {
         tft.print(title);
     };
     auto drawTrackInfo = [&]() {
+#ifdef TRUCE_LVGL
+        drawNative();return;
+#endif
         int y = ui.HEADER_HEIGHT + ui.MARGIN_Y;
 
         // Background area info
@@ -360,6 +384,9 @@ void musicPlayerUI(FS *fs, const String &filepath) {
     };
 
     auto drawTimers = [&]() {
+#ifdef TRUCE_LVGL
+        drawNative();return;
+#endif
         int y = ui.HEADER_HEIGHT + ui.MARGIN_Y + ui.DISPLAY_HEIGHT + 2;
         tft.setTextSize(ui.TEXT_SIZE_SMALL);
         tft.setTextColor(TFT_LIGHTGREY, bruceConfig.bgColor);
@@ -376,6 +403,9 @@ void musicPlayerUI(FS *fs, const String &filepath) {
         tft.print(totalStr);
     };
     auto drawControls = [&]() {
+#ifdef TRUCE_LVGL
+        drawNative();return;
+#endif
         int startY = tftHeight - ui.CONTROLS_HEIGHT - ui.MARGIN_Y;
         int totalWidth = tftWidth - (2 * ui.MARGIN_X);
         int gap = (totalWidth - (BTN_COUNT * ui.BUTTON_SIZE)) / (BTN_COUNT - 1);
@@ -461,6 +491,10 @@ void musicPlayerUI(FS *fs, const String &filepath) {
             selectedButton = (selectedButton + 1) % BTN_COUNT;
             controlsNeedRedraw = true;
         }
+#ifdef TRUCE_LVGL
+        const int tappedAction=truce::takeMediaAction();
+        if(tappedAction>=0)selectedButton=tappedAction;
+#endif
         if (check(SelPress)) {
             // Anti-bounce for play button
             if (selectedButton == BTN_PLAY && millis() - player.lastPauseAction < 300) {
@@ -536,6 +570,9 @@ void musicPlayerUI(FS *fs, const String &filepath) {
         delay(30); // Loop for responsive input
     }
 
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
     tft.fillScreen(bruceConfig.bgColor);
 }
 #endif

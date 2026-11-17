@@ -2,7 +2,7 @@
 #define __SD_FUNCTIONS_H__
 
 #include <FS.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <SD.h>
 #include <SPI.h>
 

@@ -1,5 +1,7 @@
 #ifndef LITE_VERSION
 #include "fm.h"
+#include "core/truce/runtime.h"
+#include <truce_hooks.h>
 #include "core/utils.h"
 
 bool auto_scan = false;
@@ -12,6 +14,10 @@ void set_auto_scan(bool new_value) { auto_scan = new_value; }
 void set_frq(uint16_t frq) { fm_station = frq; }
 
 void fm_banner() {
+#ifdef TRUCE_LVGL
+    truce::dialFrame("Rádio FM",String(fm_station/100.0f,2)+" MHz","Preparando módulo",0);
+    truce::graphicStatus("Rádio FM");truce::operationControls("","","Encerrar","Sair");return;
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     tft.setCursor(10, 10);
     tft.drawCentreString("~== Bruce Radio ==~", tftWidth / 2, 10, SMOOTH_FONT);
@@ -30,8 +36,13 @@ uint16_t fm_scan() {
     radio.readTuneStatus();
     min_noise = radio.currNoiseLevel;
 
+#ifdef TRUCE_LVGL
+    truce::dialFrame("Rádio FM","87.50 MHz","Busca de frequência",0);
+    truce::operationControls("","","","");
+#else
     tft.fillScreen(bruceConfig.bgColor);
     displayTextLine("Scanning...");
+#endif
     for (f = 8750; f < 10800; f += 10) {
         Serial.print("Measuring ");
         Serial.print(f);
@@ -39,6 +50,9 @@ uint16_t fm_scan() {
         radio.readTuneMeasure(f);
         radio.readTuneStatus();
         Serial.println(radio.currNoiseLevel);
+#ifdef TRUCE_LVGL
+        if(f%50==0){truce::dialFrame("Rádio FM",String(f/100.0f,2)+" MHz","Busca de frequência",(f-8750)*1000/2050);truce::pumpOperation();}
+#endif
 
         // Set best freq candidate
         if (radio.currNoiseLevel < min_noise) {
@@ -47,6 +61,10 @@ uint16_t fm_scan() {
         }
     }
 
+#ifdef TRUCE_LVGL
+    truce::dialFrame("Rádio FM",String(freq_candidate/100.0f,2)+" MHz","Frequência encontrada",1000);
+    truce::operationControls("","","Continuar","Voltar");
+#endif
     sprintf(display_freq, "Found %d MHz", freq_candidate);
     tft.fillScreen(bruceConfig.bgColor);
     displayTextLine(display_freq);
@@ -57,7 +75,7 @@ uint16_t fm_scan() {
 
 // Choose between 92.0 - 92.1 - 92.2 - 92.3 etc.
 void fm_options_frq(uint16_t f_min, bool reserved) {
-    char f_str[9];
+    char f_str[16];
     uint16_t f_max;
     // Choose between scan for best freq or select freq
     displayTextLine("Choose frequency");
@@ -76,7 +94,11 @@ void fm_options_frq(uint16_t f_min, bool reserved) {
 
     options = {};
     for (uint16_t f = f_min; f < f_max; f += 10) {
+#ifdef TRUCE_LVGL
+        snprintf(f_str,sizeof(f_str),"%u.%02u MHz",unsigned(f/100),unsigned(f%100));
+#else
         sprintf(f_str, "%d Hz", f);
+#endif
         options.push_back({f_str, [=]() { set_frq(f); }});
     }
     addOptionToMainMenu();
@@ -196,6 +218,10 @@ void fm_spectrum() {
             radio.readTuneMeasure(fm_station);
             radio.readTuneStatus();
             noise_level = radio.currNoiseLevel;
+#ifdef TRUCE_LVGL
+            truce::dialFrame("Rádio FM",String(fm_station/100.0f,2)+" MHz","Ruído medido: "+String(noise_level),std::min(1000,noise_level*1000/SIGNAL_STRENGTH_THRESHOLD));
+            truce::graphicStatus("Análise de ruído");truce::operationControls("","","Encerrar","Sair");
+#else
             if (noise_level != 0) {
                 // Clear the display area
                 tft.fillRect(0, 40, tftWidth, tftHeight, bruceConfig.bgColor);
@@ -210,6 +236,7 @@ void fm_spectrum() {
                     tft.drawLine(lineX, startY, lineX, endY, bruceConfig.priColor);
                 }
             }
+#endif
             vTaskDelay(pdMS_TO_TICKS(1));
         }
         fm_stop();
@@ -221,7 +248,11 @@ bool fm_begin() {
     if (!radio.begin()) { // begin with address 0x63 (CS high default)
         tft.fillScreen(bruceConfig.bgColor);
         Serial.println("Cannot find radio");
+#ifdef TRUCE_LVGL
+        displayError("Módulo FM não encontrado",true);
+#else
         displayTextLine("Cannot find radio", true);
+#endif
         return false;
     }
 
@@ -297,11 +328,18 @@ bool fm_setup(bool traffic_alert, bool silent) {
         radio.setProperty(SI4713_PROP_TX_RDS_PS_MISC, 0x1008);
     }
 
+#ifdef TRUCE_LVGL
+    truce::dialFrame("Rádio FM",String(fm_station/100.0f,2)+" MHz",traffic_alert?"RDS • informação de trânsito":"RDS ativo",1000);
+    truce::graphicStatus("Transmissão em execução");truce::operationControls("","","Encerrar","Sair");
+#endif
     delay(1000);
     return true;
 }
 
 void fm_stop() {
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
     if (is_running) {
         // Stop radio
         radio.setTXpower(0); // dBuV

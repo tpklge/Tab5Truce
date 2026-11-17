@@ -1,3 +1,7 @@
+#include "core/truce/runtime.h"
+#ifdef TRUCE_LVGL
+#include <truce_input_latch.h>
+#endif
 #include "core/powerSave.h"
 #include "core/utils.h"
 #include "esp32-hal-hosted.h"
@@ -186,15 +190,20 @@ void _setup_gpio() {
     bruceConfigPins.SDCARD_bus = {(gpio_num_t)43, (gpio_num_t)39, (gpio_num_t)44, (gpio_num_t)42
     }; // sck,miso,mosi,cs
 
+    WiFi.persistent(false);
     M5.begin();
     M5.Power.setExtOutput(true);
     WiFi.setPins(SDIO2_CLK, SDIO2_CMD, SDIO2_D0, SDIO2_D1, SDIO2_D2, SDIO2_D3, SDIO2_RST);
     // Start hosted Wifi and do an async scan to trigger firmware loading and initialization of the WiFi
     // subsystem
+#ifndef TRUCE_LVGL
     hostedInitWiFi(); // ESP-IDF function to initialize the WiFi driver in hosted mode
+#endif
     WiFi.setAutoReconnect(false);
+#ifndef TRUCE_LVGL
     WiFi.disconnect(false);
     WiFi.scanNetworks(true);
+#endif
     bruceConfig.colorInverted = 0;
 }
 
@@ -222,10 +231,21 @@ void InputHandler(void) {
     tab5KbPoll();
 
     static long tm = millis();
-    if (millis() - tm > 200 || LongPress) {
+    if (millis() - tm >
+#ifdef TRUCE_LVGL
+            (truce::active() ? 8 : 200)
+#else
+            200
+#endif
+        || LongPress) {
         M5.update();
         auto t = M5.Touch.getDetail();
-        if (t.isPressed() || t.isHolding()) {
+#ifdef TRUCE_LVGL
+        const bool touched=truce::validTouch(M5.Touch.getCount(),t.isPressed() || t.isHolding(),t.x,t.y,tftWidth,tftHeight);
+#else
+        const bool touched=t.isPressed() || t.isHolding();
+#endif
+        if (touched) {
             // Serial.printf("x1=%d, y1=%d, ", t.x, t.y);
             tm = millis();
             if (!wakeUpScreen()) AnyKeyPress = true;
@@ -236,6 +256,9 @@ void InputHandler(void) {
             touchPoint.x = t.x;
             touchPoint.y = t.y;
             touchPoint.pressed = true;
+#ifdef TRUCE_LVGL
+            if (!truce::active())
+#endif
             touchHeatMap(touchPoint);
         } else touchPoint.pressed = false;
     }

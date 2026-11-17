@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #include "emit.h"
 #include "modules/rf/rf_utils.h" // for initRfModule
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
@@ -15,6 +16,9 @@ TaskHandle_t rf_raw_emit_draw_handle = NULL;
 
 // FreeRTOS task to handle periodic updates
 void rf_raw_emit_draw(void *parameter) {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("RF Emulate");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     drawMainBorder();
     tft.setCursor(2 * BORDER_PAD_X, BORDER_PAD_Y + LH * FP + 2);

@@ -1,3 +1,4 @@
+#include "truce/runtime.h"
 #include "mykeyboard.h"
 #include "core/utils.h"
 #include "core/wifi/webInterface.h"
@@ -1406,6 +1407,9 @@ void setKeyboardLanguage() {
 /// Supported values: "QWERTY" (default), "AZERTY" (French), "QWERTZ" (German).
 /// Returns the user typed string, or the ASCII ESC character if cancelled.
 String keyboard(const String &current_text, int max_size, const String &textbox_title, bool mask_input) {
+#ifdef TRUCE_LVGL
+    return truce::keyboard(current_text, max_size, textbox_title, mask_input, 0);
+#endif
     String lang = bruceConfig.keyboardLang;
     if (lang == "AZERTY") {
         return generalKeyboard<azerty_keyboard_height, azerty_keyboard_width>(
@@ -1426,6 +1430,9 @@ String keyboard(const String &current_text, int max_size, const String &textbox_
 /// This calls a keyboard with the characters useful to write hexadecimal codes.
 /// Returns the user typed strings, return the ASCII ESC character if the operation was cancelled
 String hex_keyboard(const String &current_text, int max_size, const String &textbox_title, bool mask_input) {
+#ifdef TRUCE_LVGL
+    return truce::keyboard(current_text, max_size, textbox_title, mask_input, 1);
+#endif
     return generalKeyboard<hex_keyboard_height, hex_keyboard_width>(
         current_text, max_size, textbox_title, hex_keyset, mask_input
     );
@@ -1434,6 +1441,9 @@ String hex_keyboard(const String &current_text, int max_size, const String &text
 /// This calls a numbers only keyboard. Returns the user typed strings, return the ASCII ESC character
 /// if the operation was cancelled
 String num_keyboard(const String &current_text, int max_size, const String &textbox_title, bool mask_input) {
+#ifdef TRUCE_LVGL
+    return truce::keyboard(current_text, max_size, textbox_title, mask_input, 2);
+#endif
     return generalKeyboard<numpad_keyboard_height, numpad_keyboard_width>(
         current_text, max_size, textbox_title, numpad_keyset, mask_input
     );

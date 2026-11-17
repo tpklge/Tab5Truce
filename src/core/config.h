@@ -43,7 +43,11 @@ public:
         bool allowGetCreds;
     };
 
+#ifdef TRUCE_SD_ONLY
+    const char *filepath = "/config/bruce.conf";
+#else
     const char *filepath = "/bruce.conf";
+#endif
 
     //  Settings
     int dimmerSet = 60;
@@ -98,7 +102,11 @@ public:
     int devMode = 0;
 
     int colorInverted = DEFAULT_COLOR_INVERTED;
+#ifdef BRUCE_TAB5_UI
+    int mainMenuStyle = MAIN_MENU_GRID;
+#else
     int mainMenuStyle = MAIN_MENU_CAROUSEL;
+#endif
     int badUSBBLEKeyboardLayout = 0;
     uint16_t badUSBBLEKeyDelay = 10;
     bool badUSBBLEShowOutput = true;

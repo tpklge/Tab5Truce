@@ -1,3 +1,4 @@
+#include <truce_transaction.h>
 #include "config.h"
 #include "mifare_keys_manager.h"
 #include "sd_functions.h"
@@ -99,6 +100,9 @@ void BruceConfig::fromFile(bool checkFS) {
         else return;
     }
 
+#ifdef TRUCE_SD_ONLY
+    truce::recover(*fs, String(filepath));
+#endif
     if (!fs->exists(filepath)) {
         log_i("Config file not found. Creating default config");
         return saveFile();
@@ -444,11 +448,21 @@ void BruceConfig::fromFile(bool checkFS) {
 }
 
 void BruceConfig::saveFile() {
+#ifdef TRUCE_SD_ONLY
+    FS *fs;
+    if (!getFsStorage(fs)) return;
+#else
     FS *fs = &LittleFS;
+#endif
     JsonDocument jsonDoc = toJson();
 
     // Open file for writing
+#ifdef TRUCE_SD_ONLY
+    String tempPath = String(filepath) + ".tmp";
+    File file = fs->open(tempPath, FILE_WRITE);
+#else
     File file = fs->open(filepath, FILE_WRITE);
+#endif
     if (!file) {
         log_e("Failed to open config file");
         file.close();
@@ -456,19 +470,41 @@ void BruceConfig::saveFile() {
     };
 
     // Serialize JSON to file
+#ifndef TRUCE_SD_ONLY
     serializeJsonPretty(jsonDoc, Serial);
-    if (serializeJsonPretty(jsonDoc, file) < 5) log_e("Failed to write config file");
+#endif
+    const bool saved = serializeJsonPretty(jsonDoc, file) == measureJsonPretty(jsonDoc);
+    if (!saved) log_e("Failed to write config file");
     else log_i("config file written successfully");
 
+    file.flush();
     file.close();
+#ifdef TRUCE_SD_ONLY
+    if (saved) truce::commit(*fs, tempPath, String(filepath));
+#endif
 
+#ifndef TRUCE_SD_ONLY
     if (setupSdCard()) copyToFs(LittleFS, SD, filepath, false);
+#endif
 }
 
 void BruceConfig::factoryReset() {
+#ifdef TRUCE_SD_ONLY
+    FS *fs;
+    if (!getFsStorage(fs)) return;
+#else
     FS *fs = &LittleFS;
+#endif
+#ifdef TRUCE_SD_ONLY
+    fs->remove(String(filepath) + ".bak");
+    fs->remove(String(filepath) + ".reset");
+    fs->rename(String(filepath), String(filepath) + ".reset");
+#else
     fs->rename(String(filepath), "/bak." + String(filepath).substring(1));
+#endif
+#ifndef TRUCE_SD_ONLY
     if (setupSdCard()) SD.rename(String(filepath), "/bak." + String(filepath).substring(1));
+#endif
     ESP.restart();
 }
 

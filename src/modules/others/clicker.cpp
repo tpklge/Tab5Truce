@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 // AutoClicker - v1.1 (Updated by Senape3000)
 // Optimized for stability, readability, and dynamic GUI scaling
 
@@ -102,6 +103,16 @@ void drawMenuItem(
     const LayoutConfig &layout, MenuItem itemIndex, bool isSelected, bool isEdit, const ClickerConfig &config,
     bool custom_mode
 ) {
+#ifdef TRUCE_LVGL
+    if(isSelected) {
+        const char *names[]={"Intervalo","Botão","Quantidade","Iniciar"};
+        truce::panelFrame("Auto Clicker",String(isEdit?"Editando: ":"Selecionado: ")+names[itemIndex],
+            {"Intervalo: "+String(config.delay_ms)+" ms","Botão: "+String(BUTTON_NAMES[config.button_type]),
+             "Cliques: "+(config.max_clicks?String(config.max_clicks):String("Sem limite"))});
+        truce::operationControls("Anterior","Próximo",isEdit?"Aplicar":"Selecionar","Sair");
+    }
+    return;
+#endif
     int yPos = 0;
 
     // Calculate Y position dynamically
@@ -247,6 +258,9 @@ void drawMenuItem(
  * @param layout Screen layout configuration
  */
 void drawConfigScreen(const LayoutConfig &layout) {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("Auto Clicker");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
 
     // Header bar with app title
@@ -272,6 +286,9 @@ void drawConfigScreen(const LayoutConfig &layout) {
  * @param buttonName Name of the button being clicked (LEFT/RIGHT/MID)
  */
 void drawClickingScreen(const LayoutConfig &layout, const char *buttonName) {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("Auto Clicker");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
 
     // Animated header to show active state
@@ -373,6 +390,9 @@ void drawSummaryScreen(
     const LayoutConfig &layout, unsigned long totalClicks, const char *buttonName, bool completed,
     unsigned long delay_ms, int max_clicks
 ) {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("Auto Clicker");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
 
     // Header shows completion status
@@ -421,6 +441,9 @@ void drawSummaryScreen(
  * @param layout Screen layout configuration
  */
 void drawUSBInitScreen(const LayoutConfig &layout) {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("Auto Clicker");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
 
     // Header
@@ -888,6 +911,9 @@ void usbClickerSetup() { clicker_setup(); }
  * Will require BLE HID library and pairing logic
  */
 void bleClickerSetup() {
+#ifdef TRUCE_LVGL
+    truce::operationTitle("Auto Clicker");
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
     tft.setTextSize(FM);

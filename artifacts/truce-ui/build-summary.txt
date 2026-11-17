@@ -1,0 +1,4 @@
+RAM:   [===       ]  25.4% (used 130140 bytes from 512000 bytes)
+Flash: [===       ]  25.0% (used 4197688 bytes from 16777216 bytes)
+======================== [SUCCESS] Took 183.24 seconds ========================
+Hardware validation: pending.

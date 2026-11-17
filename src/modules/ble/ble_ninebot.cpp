@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 /**
  * @file ble_ninebot.cpp
  * @author Sor3nt (https://github.com/Sor3nt)
@@ -114,6 +115,9 @@ void BLENinebot::setup() {
 }
 
 void BLENinebot::redrawMainBorder() {
+#ifdef TRUCE_LVGL
+    truce::beginDataPanel("Ninebot");truce::operationControls("","","Selecionar","Voltar");return;
+#endif
     drawMainBorder();
     tft.drawString("-=Ninebot Tuning=-", (tftWidth / 2) - ((18 * 6) / 2), 12);
 }

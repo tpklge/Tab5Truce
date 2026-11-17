@@ -1,0 +1,14 @@
+ init=1 found=1 total=33554432 free=33551856 | internal free=264204 largest=196596
+[RAMLOG] t=    17ms stage=setup-start          | heap free= 264204 minEver= 260260 | internal free= 264204 largest= 196596 dma= 196596 | psram free=33551856
+[RAMLOG] t=  3193ms stage=first-display-elem   | heap free= 107528 minEver= 106480 | internal free= 107528 largest=  65524 dma=  65524 | psram free=31706404
+[RAMLOG] t=  3194ms stage=after LittleFS       | heap free= 107528 minEver= 106480 | internal free= 107528 largest=  65524 dma=  65524 | psram free=31706404
+SDCard in a different Bus, using sdcardSPI instance
+SDCARD mounted successfully
+[RAMLOG] t=  3899ms stage=after-storage        | heap free=  99148 minEver=  91976 | internal free=  99148 largest=  55284 dma=  55284 | psram free=31591604
+[RAMLOG] t=  3939ms stage=after-tft-clock-led  | heap free=  94420 minEver=  91976 | internal free=  94420 largest=  51188 dma=  51188 | psram free=31591604
+[RAMLOG] t=  3940ms stage=before-wifi-init     | heap free=  93264 minEver=  91976 | internal free=  93264 largest=  51188 dma=  51188 | psram free=31591604
+Tab5 keyboard ready (fw 0x01)
+[RAMLOG] t= 11202ms stage=setup-end            | heap free=  75004 minEver=  74984 | internal free=  75004 largest=  34804 dma=  34804 | psram free=31589876
+[RAMLOG] t= 11219ms stage=first-mainMenu       | heap free=  75004 minEver=  74804 | internal free=  75004 largest=  34804 dma=  34804 | psram free=31589876
+
+USB CLI health check: responded to help; no resets during additional 35-second observation.

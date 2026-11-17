@@ -28,6 +28,7 @@ on:
 
 jobs:
   compile_sketch:
+    if: github.repository == 'BruceDevices/Firmware'
     name: Build ${{ matrix.board.env }}
     runs-on: ubuntu-latest
     strategy:
@@ -202,7 +203,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: github_release
     needs: compile_sketch
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') || github.ref_type == 'tag'
+    if: github.repository == 'BruceDevices/Firmware' && ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') || github.ref_type == 'tag')
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -279,7 +280,7 @@ jobs:
 
       - name: Delete old lastRelease assets
         uses: actions/github-script@v6
-        if: github.ref_type == 'tag'
+        if: github.repository == 'BruceDevices/Firmware' && github.ref_type == 'tag'
         with:
           script: |
             const release_id = ${{ steps.get_release.outputs.last }};
@@ -298,7 +299,7 @@ jobs:
 
       - name: Upload new lastRelease asset
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
+        if: github.repository == 'BruceDevices/Firmware' && github.ref_type == 'tag'
         with:
           name: lastRelease commit (${{ steps.get_sha.outputs.GITHUB_SHA_SHORT }})
           tag_name: lastRelease
@@ -327,7 +328,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: github_release
     needs: [compile_sketch]
-    if: github.ref_type == 'tag'
+    if: github.repository == 'BruceDevices/Firmware' && github.ref_type == 'tag'
     permissions:
       contents: write
       issues: write

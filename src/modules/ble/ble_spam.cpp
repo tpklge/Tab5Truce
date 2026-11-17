@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 /**
  * ble_spam.cpp — BLE Spam Module for Bruce Firmware
  *
@@ -47,7 +48,7 @@
 #include "esp_task_wdt.h"
 #include <globals.h>
 #if __has_include(<Preferences.h>)
-#include <Preferences.h>
+#include "core/truce/preferences.h"
 #define BLE_SPAM_HAS_PREFERENCES 1
 #endif
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C2) ||                              \
@@ -503,13 +504,20 @@ void ibeacon(const char *DeviceName, const char *BEACON_UUID, int ManufacturerId
     // Same DMA-memory guard as bleSpamInitAdvertiser: a half-initialized
     // controller crashes on the first advertisement call
     if (!radioHasMemForBle()) {
-        displayError("Low RAM: free WiFi/SD first", true);
+        displayError(radioBleFailureMessage(), true);
         return;
     }
 
     // FIX: Always init - if already init'd, it's a no-op
     // This handles the case where another module deinit'd the stack
+#ifdef TRUCE_LVGL
+    if(!BLEDevice::init(DeviceName)) {
+        displayError("Não foi possível iniciar o Bluetooth.",true);
+        return;
+    }
+#else
     BLEDevice::init(DeviceName);
+#endif
     vTaskDelay(5 / portTICK_PERIOD_MS);
     esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_ADV, MAX_TX_POWER);
 
@@ -982,7 +990,11 @@ static int bleSpamListLoop(
     const char *footer
 ) {
     if (itemCount <= 0) return -1;
-
+#ifdef TRUCE_LVGL
+    std::vector<Option> tiles;
+    for(int i=0;i<itemCount;++i)tiles.emplace_back(labelFn(i), [](){});
+    return truce::menu(tiles,MENU_TYPE_SUBMENU,title.c_str(),initialIndex,false,"Bluetooth");
+#endif
     BleSpamListState state;
     state.cursor = (initialIndex >= 0 && initialIndex < itemCount) ? initialIndex : 0;
     state.scroll = 0;
@@ -1550,7 +1562,7 @@ static bool bleSpamInitAdvertiser(
     // boards (e.g. after Wi-Fi/SD churn) it fails half-initialized and the
     // first advertisement call crashes. Same guard as BLE_Suite/ble_common.
     if (!radioHasMemForBle()) {
-        displayError("Low RAM: free WiFi/SD first", true);
+        displayError(radioBleFailureMessage(), true);
         return false;
     }
 
@@ -1562,7 +1574,14 @@ static bool bleSpamInitAdvertiser(
     }
 
     // FIX: Always init - if already init'd, it's a no-op
+#ifdef TRUCE_LVGL
+    if(!BLEDevice::init("")) {
+        displayError("Não foi possível iniciar o Bluetooth.",true);
+        return false;
+    }
+#else
     BLEDevice::init("");
+#endif
     vTaskDelay(5 / portTICK_PERIOD_MS);
 
     pAdvertising = BLEDevice::getAdvertising();
@@ -1722,6 +1741,14 @@ static void bleSpamRenderConfigRows(
         {"MAC Rand", bleSpamMacRandLabel(config.mac_rand_mode)}
     };
 
+#ifdef TRUCE_LVGL
+    std::vector<String> fields;
+    for(const auto &row:rows)fields.push_back(String(row.label)+": "+row.value);
+    const String selected=cursor>=0 && cursor<4?String(rows[cursor].label):String("Iniciar");
+    truce::panelFrame("Ajustes Bluetooth",String(editState.editing?"Editando: ":"Selecionado: ")+selected,fields);
+    truce::operationControls("Anterior","Próximo",editState.editing?"Aplicar":"Selecionar","Voltar");
+    return;
+#endif
     for (int i = 0; i < 4; i++) {
         int rowY = startY + i * rowH;
         bool selected = (cursor == i);
@@ -1858,6 +1885,16 @@ static void bleSpamRenderRunningScreen(
     const BleSpamEditState &editState, uint32_t displaySent, float displayPkt, bool blinkOn, bool fullRedraw,
     bool statsDirty, bool configDirty, bool blinkDirty
 ) {
+#ifdef TRUCE_LVGL
+    const char *settings[]={"Intervalo","Pausa","Potência","Endereço MAC"};
+    truce::panelFrame("Bluetooth",String("Enviados: ")+displaySent+" | "+String(displayPkt,1)+" pacotes/s",
+        {"Dispositivo: "+String(bleSpamGetDeviceName(selection.attack_type,selection.device_index)),
+         "Intervalo: "+bleSpamFormatMs(config.adv_ms),"Pausa: "+bleSpamFormatMs(config.gap_ms),
+         "Potência: "+String(bleSpamTxPowerLabel(config.tx_power)),"MAC: "+String(bleSpamMacRandLabel(config.mac_rand_mode)),
+         String(editState.editing?"Editando: ":"Selecionado: ")+settings[std::max(0,std::min(cursor,3))]});
+    truce::operationControls("Anterior","Próximo",editState.editing?"Aplicar":"Editar","Parar");
+    return;
+#endif
     static int statsY = 0;
     static int configStartY = 0;
     static int rowH = 0;
@@ -1912,6 +1949,11 @@ static void bleSpamRenderRunningScreen(
 }
 
 static bool bleSpamStoppedPrompt(const BleSpamSelection &selection, uint32_t sentCount) {
+#ifdef TRUCE_LVGL
+    std::vector<Option> choices={{"Reiniciar",[](){}},{"Voltar aos ajustes",[](){}}};
+    const String heading=String("Encerrado | Enviados: ")+sentCount;
+    return truce::menu(choices,MENU_TYPE_SUBMENU,heading.c_str(),0,false,"Bluetooth")==0;
+#endif
     int cursor = 0;
     bool redraw = true;
     bool layoutDrawn = false;
@@ -2117,6 +2159,10 @@ static void bleSpamRunScreen(const BleSpamSelection &selection, BleSpamConfig &c
 
 // Show a 2-option popup. Returns 0 for first option, 1 for second, -1 for ESC.
 static int bleSpamTwoOptionPrompt(const String &title, const char *opt0, const char *opt1) {
+#ifdef TRUCE_LVGL
+    std::vector<Option> choices={{opt0,[](){}},{opt1,[](){}}};
+    return truce::menu(choices,MENU_TYPE_SUBMENU,title.c_str(),0,false,"Bluetooth");
+#endif
     int cursor = 0;
     bool redraw = true;
     bool layoutDrawn = false;

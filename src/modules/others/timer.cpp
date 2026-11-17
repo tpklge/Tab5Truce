@@ -7,6 +7,7 @@
  */
 
 #include "timer.h"
+#include "core/truce/runtime.h"
 #include "core/display.h"
 #include "core/utils.h"
 #include "modules/others/audio.h"
@@ -31,6 +32,9 @@ enum SettingMode {
 Timer::Timer() { setup(); }
 
 Timer::~Timer() {
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
     tft.fillScreen(bruceConfig.bgColor);
     backToMenu();
 }
@@ -52,6 +56,12 @@ void Timer::setup() {
         // Format and display time string
         snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d", hours % 100, minutes % 100, seconds % 100);
 
+#ifdef TRUCE_LVGL
+        const char *fields[]={"Ajustar horas","Ajustar minutos","Ajustar segundos","Alarme sonoro"};
+        truce::dialFrame("Temporizador",timeString,fields[std::min(3,int(settingMode))],int(settingMode)*250);
+        truce::graphicStatus(String(fields[std::min(3,int(settingMode))])+" • "+(playSoundOnFinish?"Som ligado":"Som desligado"));
+        truce::operationControls("Diminuir","Aumentar",settingMode==SETTING_SOUND?"Iniciar":"Próximo","Cancelar");
+#else
         drawMainBorderWithTitle("Set a timer", false);
         tft.setTextSize(fontSize);
         tft.drawCentreString(timeString, timerX, timerY, 1);
@@ -77,6 +87,7 @@ void Timer::setup() {
             default: break;
         }
 
+#endif
         // Handle ESC/BACK button - exit without starting timer
         if (check(EscPress)) { return; }
 
@@ -177,6 +188,11 @@ void Timer::loop() {
             if (seconds != lastSeconds) {
                 snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d", hours, minutes, seconds);
 
+#ifdef TRUCE_LVGL
+                truce::dialFrame("Temporizador",timeString,"Tempo restante",uint64_t(remainingMillis)*1000/duration);
+                truce::graphicStatus("Contagem regressiva");
+                truce::operationControls("","","","Cancelar");
+#else
                 // Calculate optimal font size based on display width
                 uint8_t f_size = 4;
                 for (uint8_t i = 4; i > 0; i--) {
@@ -191,6 +207,7 @@ void Timer::loop() {
                 tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
                 tft.drawCentreString(timeString, timerX, timerY, 1);
 
+#endif
                 lastSeconds = seconds;
             }
 
@@ -202,6 +219,10 @@ void Timer::loop() {
 }
 
 void Timer::playAlarmPattern() {
+#ifdef TRUCE_LVGL
+    truce::dialFrame("Temporizador","00:00:00","Tempo esgotado",0);
+    truce::graphicStatus("Alarme");truce::operationControls("","","Silenciar","Sair");
+#else
     // Display "TIME'S UP!" message
     tft.fillScreen(bruceConfig.bgColor);
     drawMainBorderWithTitle("Timer finished!", false);
@@ -214,6 +235,7 @@ void Timer::playAlarmPattern() {
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
     tft.drawCentreString("Press SEL or BACK to stop", timerX, timerY + (2 * LH), 1);
 
+#endif
     // Alarm pattern loop - continues until user stops it
     while (true) {
         // Check if user wants to stop the alarm

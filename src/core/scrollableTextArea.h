@@ -49,7 +49,7 @@ private:
     int32_t _pixelsPerLine;
     size_t _maxVisibleLines;
     uint16_t _maxCharactersPerLine;
-    bool _indentWrappedLines;
+    bool _indentWrappedLines = false;
 
     void setup();
 

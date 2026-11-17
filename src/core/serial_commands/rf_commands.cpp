@@ -11,7 +11,7 @@
 #include "modules/rf/rf_send.h"
 #include "modules/rf/rf_utils.h"
 #include <ArduinoJson.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <globals.h>
 
 uint32_t rfRxCallback(cmd *c) {

@@ -1,4 +1,5 @@
 #include "scrollableTextArea.h"
+#include "core/truce/runtime.h"
 #define _scrollBuffer tft
 ScrollableTextArea::ScrollableTextArea(const String &title)
     : firstVisibleLine{0}, _redraw{true}, _title(title), _fontSize(FP), _startX(BORDER_PAD_X),
@@ -37,6 +38,11 @@ void ScrollableTextArea::setup() {
     _maxCharactersPerLine = floor(_width / _scrollBuffer.textWidth("w", _fontSize));
     _pixelsPerLine = _scrollBuffer.fontHeight() + 2;
     _maxVisibleLines = floor(_height / _pixelsPerLine);
+#ifdef TRUCE_LVGL
+    // LVGL uses a larger font and a fixed action rail; retain every line while
+    // keeping each live viewport bounded in memory and scrollable by touch.
+    _maxVisibleLines = 16;
+#endif
 }
 
 void ScrollableTextArea::scrollUp() {
@@ -55,23 +61,22 @@ void ScrollableTextArea::scrollDown() {
 }
 
 void ScrollableTextArea::scrollToLine(size_t lineNumber) {
-    if (linesBuffer.empty()) return; // Ensure there's content to scroll
-
-    if (lineNumber > linesBuffer.size() - _maxVisibleLines) {
-        firstVisibleLine =
-            (linesBuffer.size() > _maxVisibleLines) ? linesBuffer.size() - _maxVisibleLines : 0;
-    } else {
-        firstVisibleLine = lineNumber;
-    }
+    const size_t maximum=linesBuffer.size()>_maxVisibleLines ? linesBuffer.size()-_maxVisibleLines : 0;
+    firstVisibleLine=std::min(lineNumber,maximum);
+    _redraw=true;
 }
 
 String ScrollableTextArea::getLine(size_t lineNumber) {
-    return linesBuffer[(lineNumber >= linesBuffer.size()) ? linesBuffer.size() : lineNumber];
+    return lineNumber<linesBuffer.size() ? linesBuffer[lineNumber] : String();
 }
 
 size_t ScrollableTextArea::getMaxLines() { return linesBuffer.size(); }
 
 void ScrollableTextArea::show(bool force) {
+#ifdef TRUCE_LVGL
+    truce::readDocument(_title,linesBuffer);
+    return;
+#endif
     draw(force);
 
     while (check(SelPress)) {
@@ -181,6 +186,13 @@ void ScrollableTextArea::addLine(const String &text) {
 
 void ScrollableTextArea::draw(bool force) {
     if (!_redraw && !force) return;
+#ifdef TRUCE_LVGL
+    if(truce::drawDocument(_title,linesBuffer,firstVisibleLine,_maxVisibleLines)) {
+        lastVisibleLine=std::min(linesBuffer.size(),firstVisibleLine+_maxVisibleLines);
+        _redraw=false;
+        return;
+    }
+#endif
 
     // Paint opaque rows instead of blanking the whole view before
     // every scroll. Idle views are drawn once, including show(true) callers.

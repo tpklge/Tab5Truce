@@ -1,3 +1,7 @@
+#ifdef TRUCE_LVGL
+#include <truce_input_latch.h>
+#endif
+#include "core/truce/runtime.h"
 #include "core/main_menu.h"
 #include <globals.h>
 
@@ -83,15 +87,29 @@ volatile int32_t RotaryNetSteps = 0;
 TaskHandle_t xHandle;
 void __attribute__((weak)) taskInputHandler(void *parameter) {
     auto timer = millis();
+#ifdef TRUCE_LVGL
+    truce::NavigationLatch navigationLatch;
+#endif
     while (true) {
         checkPowerSaveTime();
         // Sometimes this task run 2 or more times before looptask,
         // and navigation gets stuck, the idea here is run the input detection
         // if AnyKeyPress is false, or rerun if it was not renewed within 75ms (arbitrary)
         // because AnyKeyPress will be true if didn´t passed through a check(bool var)
-        if (!AnyKeyPress || millis() - timer > 75) {
+        if (!AnyKeyPress || millis() - timer > 75
+#ifdef TRUCE_LVGL
+            || truce::active()
+#endif
+        ) {
             // Held across the whole update so consumers never observe a half-written state
             inputLock();
+            bool keepNavigation=false;
+#ifdef TRUCE_LVGL
+            keepNavigation=navigationLatch.retain(truce::active(),AnyKeyPress &&
+                (NextPress || PrevPress || UpPress || DownPress || SelPress || EscPress ||
+                 NextPagePress || PrevPagePress),millis());
+#endif
+            if(!keepNavigation) {
             NextPress = false;
             PrevPress = false;
             UpPress = false;
@@ -102,6 +120,7 @@ void __attribute__((weak)) taskInputHandler(void *parameter) {
             SerialCmdPress = false;
             NextPagePress = false;
             PrevPagePress = false;
+            }
             touchPoint.pressed = false;
             touchPoint.Clear();
             checkAndRecoverSysI2CBus();
@@ -180,11 +199,16 @@ volatile int tftHeight = TFT_WIDTH;
  **  Config LittleFS and SD storage
  *********************************************************************/
 void begin_storage() {
+#ifndef TRUCE_SD_ONLY
     if (!setupLittleFS()) {
         LittleFS.format();
         setupLittleFS();
     }
+#endif
     RAM_LOG("after LittleFS");
+#ifdef TRUCE_LVGL
+    truce::requireStorage();
+#endif
     bool checkFS = setupSdCard();
     bruceConfig.fromFile(checkFS);
     bruceConfigPins.fromFile(checkFS);
@@ -288,6 +312,10 @@ void boot_screen() {
  **  Draw boot screen
  *********************************************************************/
 void boot_screen_anim() {
+#ifdef TRUCE_LVGL
+    truce::bootIntro();
+    return;
+#endif
     boot_screen();
     int i = millis();
     // checks for boot.jpg in SD and LittleFS for customization

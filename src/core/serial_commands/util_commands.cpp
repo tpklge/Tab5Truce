@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #include "util_commands.h"
 #include "core/main_menu.h"
 #include "core/sd_functions.h"
@@ -277,9 +278,11 @@ uint32_t navCallback(cmd *c) {
     unsigned long tmp = millis();
     while (millis() <= tmp + dur) {
         if (*var == false) {
+            inputLock();
             AnyKeyPress = true;
             SerialCmdPress = true;
             *var = true;
+            inputUnlock();
             if (!LongPress) break;
         }
         vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -299,10 +302,10 @@ uint32_t optionsCallback(cmd *c) {
 
     if (opt >= 0 && opt < options.size()) {
         // wakeUpScreen(); // Do not wakeup screen if it is dimmed and using Remote control
+        // Snapshot before publishing: the UI consumes this request on another task.
+        const String chosenLabel=options[opt].label;
+        serialDevice->printf("Selected option %d: %s\n",opt,chosenLabel.c_str());
         forceMenuOption = opt;
-        serialDevice->printf(
-            "Selected option %d: %s\n", forceMenuOption, options[forceMenuOption].label.c_str()
-        );
         vTaskDelay(30 / portTICK_PERIOD_MS);
         optionsList();
     } else if (options.size() > 0) {
@@ -419,6 +422,9 @@ uint32_t loaderCallback(cmd *c) {
 }
 
 void createUtilCommands(SimpleCLI *cli) {
+#ifdef TRUCE_LVGL
+    cli->addCommand("ui_metrics", [](cmd *) -> uint32_t {truce::diagnostics();return true;});
+#endif
     cli->addCommand("uptime", uptimeCallback);
     cli->addCommand("date", dateCallback);
     cli->addCommand("i2c", i2cCallback);

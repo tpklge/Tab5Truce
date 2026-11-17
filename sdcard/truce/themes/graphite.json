@@ -1,0 +1,27 @@
+{
+  "name": "Grafite",
+  "background": "#151B23",
+  "panel": "#243041",
+  "text": "#F8FAFC",
+  "muted": "#CBD5E1",
+  "border": "#64748B",
+  "accent": "#FF6B83",
+  "icons": {
+    "WiFi": "icons/graphite/wifi.png",
+    "BLE": "icons/graphite/bluetooth.png",
+    "RF": "icons/graphite/radio.png",
+    "NRF24": "icons/graphite/radio.png",
+    "LoRa": "icons/graphite/antenna.png",
+    "FM": "icons/graphite/radio.png",
+    "IR": "icons/graphite/remote.png",
+    "Ethernet": "icons/graphite/network.png",
+    "GPS": "icons/graphite/gps.png",
+    "RFID": "icons/graphite/card.png",
+    "Files": "icons/graphite/folder.png",
+    "JS Interpreter": "icons/graphite/script.png",
+    "Clock": "icons/graphite/clock.png",
+    "Others": "icons/graphite/apps.png",
+    "Wire Tools": "icons/graphite/wire.png",
+    "Config": "icons/graphite/settings.png"
+  }
+}

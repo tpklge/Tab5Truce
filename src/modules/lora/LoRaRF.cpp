@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION)
 #include "LoRaRF.h"
 #include "WString.h"
@@ -6,7 +7,7 @@
 #include "core/configPins.h"
 #include <Arduino.h>
 #include <FS.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <RadioLib.h>
 #include <core/display.h>
 #include <core/mykeyboard.h>
@@ -224,6 +225,9 @@ void reciveMessage() {
 void render() {
     if (!update) return;
     tft.setTextSize(FP);
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(0x6DFC);
     if (!intlora) { tft.drawString("Lora Init Failed", 10, 13); }
@@ -259,6 +263,9 @@ void loadMessages() {
 // optional call funcs
 void sendmsg() {
     Serial.println("C bttn");
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     if (!intlora) {
         tft.setTextColor(bruceConfig.priColor);
@@ -282,6 +289,9 @@ void sendmsg() {
         update = true;
         return;
     }
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     update = true;
     File file = LittleFS.open("/chats.txt", "a");
@@ -422,6 +432,9 @@ void lorachat() {
         displayError("Invalid LoRa frequency", true);
         return;
     }
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     update = true;
     Serial.println("Initializing LoRa...");
@@ -447,6 +460,9 @@ void lorachat() {
 // settings
 // check the saving and loading
 void changeusername() {
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     String username = keyboard("", 64, "Username:");
     if (username == "" || username == "\x1B") return;
@@ -461,6 +477,9 @@ void changeusername() {
 }
 
 void chfreq() {
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("LoRa");
+    #endif
     tft.fillScreen(TFT_BLACK);
     char buf[15];
     File file = LittleFS.open("/lora_settings.json", "r");

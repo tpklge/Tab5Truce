@@ -18,6 +18,9 @@
 
 #include "sd_diskio2.h"
 #include "vfs_api.h"
+#ifdef TRUCE_SD_ONLY
+#include "truce_vfs.h"
+#endif
 
 using namespace fs;
 
@@ -41,7 +44,14 @@ bool SDFS::begin(
         return false;
     }
 
+#ifdef TRUCE_SD_ONLY
+    // Mount the card physically at /sd, expose only /sd/truce to every FS consumer.
     _impl->mountpoint(mountpoint);
+    if (!exists("/truce") && !mkdir("/truce")) { end(); return false; }
+    _impl->mountpoint("/sd/truce");
+#else
+    _impl->mountpoint(mountpoint);
+#endif
     return true;
 }
 
@@ -105,9 +115,25 @@ uint64_t SDFS::usedBytes() {
     return size;
 }
 
-bool SDFS::readRAW(uint8_t *buffer, uint32_t sector) { return sd_read_raw(_pdrv, buffer, sector); }
+bool SDFS::readRAW(uint8_t *buffer, uint32_t sector) {
+#ifdef TRUCE_SD_ONLY
+    return false;
+#else
+    return sd_read_raw(_pdrv, buffer, sector);
+#endif
+}
 
-bool SDFS::writeRAW(uint8_t *buffer, uint32_t sector) { return sd_write_raw(_pdrv, buffer, sector); }
+bool SDFS::writeRAW(uint8_t *buffer, uint32_t sector) {
+#ifdef TRUCE_SD_ONLY
+    return false; // Raw USB block access would bypass the /truce boundary.
+#else
+    return sd_write_raw(_pdrv, buffer, sector);
+#endif
+}
 
+#ifdef TRUCE_SD_ONLY
+SDFS SD = SDFS(FSImplPtr(new TruceVFS()));
+#else
 SDFS SD = SDFS(FSImplPtr(new VFSImpl()));
+#endif
 #endif

@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #if !defined(LITE_VERSION)
 #include "ducky_typer.h"
 #include "core/display.h"
@@ -1071,6 +1072,10 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
         hid->releaseAll();
     }
 
+#ifdef TRUCE_LVGL
+    truce::panelFrame(ble?"BLE Keyboard":"USB Keyboard","Teclado conectado",{"Entrada: Teclado físico","Saída: Fn + Esc ou botão lateral"});
+    truce::operationControls("","","","Sair");
+#else
     drawMainBorder();
     tft.setTextSize(FP);
     tft.setTextColor(bruceConfig.priColor);
@@ -1087,7 +1092,11 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
     );
     tft.setTextSize(FP);
 
+#endif
     while (1) {
+#ifdef TRUCE_LVGL
+        if(truce::takeBackEvent())break;
+#endif
 #if defined(HAS_KEYBOARD)
         key = _getKeyPress();
         if (key.pressed && (millis() - debounce > 200)) {
@@ -1114,6 +1123,9 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
             }
 
             if (keyStr.length() > 0) {
+#ifdef TRUCE_LVGL
+                truce::panelFrame(ble?"BLE Keyboard":"USB Keyboard","Teclado conectado",{"Última tecla: "+keyStr,"Saída: Fn + Esc ou botão lateral"});
+#else
                 drawMainBorder(false);
                 if (_mymsg.length() > keyStr.length())
                     tft.drawCentreString(
@@ -1121,6 +1133,7 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
                     );
                 tft.drawCentreString("Pressed: " + keyStr, tftWidth / 2, tftHeight / 2, 1);
                 _mymsg = keyStr;
+#endif
             }
             debounce = millis();
         }
@@ -1249,7 +1262,9 @@ void MediaCommands(HIDInterface *hid, bool ble) {
 
     if (hid->isConnected()) {
         BLEConnected = true;
+#ifndef TRUCE_LVGL
         drawMainBorder();
+#endif
         int index = 0;
 
     reMenu:
@@ -1464,7 +1479,18 @@ void PresenterMode(HIDInterface *&hid, bool ble) {
     unsigned long lastDisplayedSeconds = 0;
     bool timerStarted = false;
 
+#ifdef TRUCE_LVGL
+    auto drawPresenter=[&]() {
+        const unsigned long elapsed=timerStarted?(millis()-startTime)/1000:0;
+        char timerText[20];snprintf(timerText,sizeof(timerText),"%02lu:%02lu:%02lu",elapsed/3600,(elapsed/60)%60,elapsed%60);
+        truce::panelFrame("Apresentador",timerStarted?"Apresentação em andamento":"Pronto para começar",{"Slide: "+String(currentSlide),"Tempo: "+String(timerText)});
+        truce::operationControls("Slide anterior","Próximo slide",timerStarted?"Avançar":"Iniciar","Sair");
+    };
+#endif
     auto drawStaticUI = [&]() {
+#ifdef TRUCE_LVGL
+        drawPresenter();return;
+#endif
         tft.fillScreen(bruceConfig.bgColor);
 
         tft.setTextSize(FM);
@@ -1489,6 +1515,9 @@ void PresenterMode(HIDInterface *&hid, bool ble) {
     const int slideDrawY = tftHeight / 2 - 30 * slideSize / 4;
 
     auto updateSlideDisplay = [&]() {
+#ifdef TRUCE_LVGL
+        drawPresenter();lastDisplayedSlide=currentSlide;return;
+#endif
         tft.fillRect(0, slideClearY, tftWidth, slideClearH, bruceConfig.bgColor);
 
         tft.setTextSize(slideSize);
@@ -1499,6 +1528,9 @@ void PresenterMode(HIDInterface *&hid, bool ble) {
     };
 
     auto updateTimerDisplay = [&]() {
+#ifdef TRUCE_LVGL
+        drawPresenter();lastDisplayedSeconds=timerStarted?(millis()-startTime)/1000:0;return;
+#endif
         unsigned long elapsed = 0;
         if (timerStarted) { elapsed = (millis() - startTime) / 1000; }
 

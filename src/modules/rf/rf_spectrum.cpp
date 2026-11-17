@@ -1,4 +1,6 @@
 #include "rf_spectrum.h"
+#include "core/truce/runtime.h"
+#include <truce_signal_view.h>
 #include "core/display.h"
 #include "protocols/rf_config.h"
 #include "protocols/rf_decoder.h"
@@ -22,6 +24,12 @@ static inline uint16_t rf_label_color() {
 // Frame plus a single status line at the bottom. Drawn once, and again only
 // when the tuning changes, so the live graph never flickers.
 static void draw_rf_header(const String &title, const String &info) {
+#ifdef TRUCE_LVGL
+    truce::beginSpectrum(title,false,title!="RF SquareWave" && title!="RF RSSI");
+    truce::graphicStatus(info);
+    const bool waveform=title=="RF SquareWave";
+    truce::operationControls(waveform?"Anterior":"",waveform?"Próximo":"",bruceConfigPins.rfModule==CC1101_SPI_MODULE?"Frequência":"","Parar");return;
+#endif
     drawMainBorderWithTitle(title);
     tft.setTextSize(FP);
     tft.fillRect(rf_plot_left(), rf_plot_bot() + 2, rf_plot_width(), 8 * FP, bruceConfig.bgColor);
@@ -40,6 +48,9 @@ static bool spectrum_rmt_rx_done_callback(
 }
 
 void draw_tf_spectrum_grid() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     const int top = rf_plot_top();
     const int bot = rf_plot_bot();
     const uint16_t grid = rf_grid_color();
@@ -54,6 +65,9 @@ void draw_tf_spectrum_grid() {
 
 // Centres a pulse-width bar on the mid line of the plot band.
 static void draw_rf_pulse(int x, int magnitude) {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     const int top = rf_plot_top();
     const int bot = rf_plot_bot();
     const int mid = (top + bot) / 2;
@@ -83,6 +97,12 @@ void rf_spectrum() {
                         map(i, 0, durations.size() > 1 ? durations.size() - 1 : 1, 0, rf_plot_width() - 1);
                     draw_rf_pulse(lineX, abs(durations[i]));
                 }
+#ifdef TRUCE_LVGL
+                uint8_t envelope[256];
+                truce::signalEnvelope(envelope,durations.size(),[&](size_t i){return std::abs(int64_t(durations[i]));},0,SIGNAL_STRENGTH_THRESHOLD);
+                truce::spectrumTrace(envelope,nullptr,1,0);truce::spectrumRow(envelope);
+                truce::graphicStatus(String(bruceConfigPins.rfFreq,2)+" MHz • "+String(durations.size())+" pulsos");
+#endif
                 RF_DBG("m5 spectrum: durations=%u", (unsigned)durations.size());
             }
 
@@ -133,16 +153,27 @@ void rf_spectrum() {
             draw_tf_spectrum_grid();
             // Draw waveform based on signal strength
             for (size_t i = 0; i < rx_size; i++) {
-                int lineX = rf_plot_left() + map(i, 0, rx_size - 1, 0, rf_plot_width() - 1);
+                int lineX = rf_plot_left() + map(i, 0, rx_size>1?rx_size-1:1, 0, rf_plot_width() - 1);
                 draw_rf_pulse(lineX, rx_items[i].duration0 + rx_items[i].duration1);
             }
 
+#ifdef TRUCE_LVGL
+            uint8_t envelope[256];
+            truce::signalEnvelope(envelope,rx_size,[&](size_t i){return int64_t(rx_items[i].duration0)+rx_items[i].duration1;},0,SIGNAL_STRENGTH_THRESHOLD);
+            truce::spectrumTrace(envelope,nullptr,1,0);truce::spectrumRow(envelope);
+            truce::graphicStatus(String(bruceConfigPins.rfFreq,2)+" MHz • "+String(rx_size)+" pulsos");
+#endif
             ESP_ERROR_CHECK(rmt_receive(rx_ch, item, sizeof(item), &receive_config));
             rx_size = 0;
         }
         // Checks to leave while
         if (check(EscPress)) { break; }
-        if (setMHZMenu()) yield();
+        if (setMHZMenu()) {
+#ifdef TRUCE_LVGL
+            draw_rf_header("RF Spectrum",String(bruceConfigPins.rfFreq,2)+" MHz");
+#endif
+            yield();
+        }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
     returnToMenu = true;
@@ -237,6 +268,14 @@ void rf_SquareWave() {
 
     // Draws the visible slice [scrollPx, scrollPx+drawW] of the stored capture.
     auto render = [&]() {
+#ifdef TRUCE_LVGL
+        uint8_t envelope[256];truce::digitalEnvelope(envelope,capture,scrollPx,drawW,TIME_DIVIDER);
+        truce::spectrumTrace(envelope,nullptr,1,0);
+        const int ticks[]={0,128,255};
+        const String labels[]={String(scrollPx*TIME_DIVIDER/1000.0f,1)+" ms",String((scrollPx+drawW/2)*TIME_DIVIDER/1000.0f,1)+" ms",String((scrollPx+drawW)*TIME_DIVIDER/1000.0f,1)+" ms"};
+        truce::spectrumRuler(ticks,labels,3,-1);
+        truce::graphicStatus(String(bruceConfigPins.rfFreq,2)+" MHz • níveis 0 / 1");return;
+#endif
         draw_axes();
         int visL = scrollPx, visR = scrollPx + drawW;
         auto sx = [&](int t) { return drawLeft + (t - scrollPx); };
@@ -265,7 +304,9 @@ void rf_SquareWave() {
     };
 
 PRINT:
+#ifndef TRUCE_LVGL
     tft.drawPixel(0, 0, 0);
+#endif
     draw_rf_header("RF SquareWave", String(bruceConfigPins.rfFreq, 2) + " MHz  < > scroll");
     capture.clear(); // drop any stale capture (e.g. after a frequency change)
     scrollPx = totalPx = maxScroll = 0;
@@ -330,13 +371,16 @@ void rf_CC1101_rssi() {
     while (1) {
         if (redraw) {
             redraw = false;
+#ifndef TRUCE_LVGL
             tft.drawPixel(0, 0, 0);
+#endif
             tft.setTextSize(FP);
             // Fixed frequency sees a dot running grafic, showing RSSI over time
             if (bruceConfigPins.rfFxdFreq) {
                 if (!initRfModule("rx", bruceConfigPins.rfFreq))
                     displayError("Error setting frequency", true);
                 draw_rf_header("RF RSSI", String(bruceConfigPins.rfFreq, 2) + " MHz");
+#ifndef TRUCE_LVGL
                 tft.fillRect(rf_plot_left(), top, rf_plot_width(), bot - top, bruceConfig.bgColor);
                 tft.drawFastVLine(axisX, top, bot - top, bruceConfig.priColor);
                 tft.setTextColor(rf_label_color(), bruceConfig.bgColor);
@@ -345,6 +389,7 @@ void rf_CC1101_rssi() {
                     tft.drawString(String(dbm), 8, y, 1);
                     tft.drawFastHLine(axisX - 2, rssiY(dbm), 3, rf_grid_color());
                 }
+#endif
                 // resets signal array
                 std::fill(signal.begin(), signal.end(), -95);
             }
@@ -355,6 +400,7 @@ void rf_CC1101_rssi() {
                 draw_rf_header(
                     String("RF RSSI ") + subghz_frequency_ranges[bruceConfigPins.rfScanRange], ""
                 );
+#ifndef TRUCE_LVGL
                 tft.fillRect(rf_plot_left(), top, rf_plot_width(), bot - top, bruceConfig.bgColor);
                 tft.drawFastHLine(rf_plot_left(), bot, rf_plot_width(), bruceConfig.priColor);
                 tft.setTextColor(rf_label_color(), bruceConfig.bgColor);
@@ -371,6 +417,7 @@ void rf_CC1101_rssi() {
                 for (int i = 0; i < range; i++) {
                     tft.drawFastVLine(rf_plot_left() + space * i, bot - 4, 4, rf_grid_color());
                 }
+#endif
                 std::fill(bar_size.begin(), bar_size.end(), 0);
             }
         }
@@ -378,7 +425,9 @@ void rf_CC1101_rssi() {
         // draw dot graph for fixed frequency
         if (bruceConfigPins.rfFxdFreq) {
             int rssi = ELECHOUSE_cc1101.getRssi();
+#ifndef TRUCE_LVGL
             tft.drawPixel(0, 0, 0); // To make sure CC1101 shared with TFT works properly
+#endif
             int prev = signal[0];
             for (int i = 1; i < graph_size; i++) {
                 if (EscPress || SelPress) break;
@@ -386,16 +435,27 @@ void rf_CC1101_rssi() {
                 const int x1 = axisX + i;
                 const int curr = signal[i];
                 // erase old segment between previous and current points
+#ifndef TRUCE_LVGL
                 tft.drawLine(x0, rssiY(prev), x1, rssiY(curr), bruceConfig.bgColor);
+#endif
                 const int next_val = (i == graph_size - 1) ? rssi : signal[i + 1];
                 // shift buffer left by one
                 signal[i - 1] = curr;
                 if (i == graph_size - 1) signal[i] = rssi;
                 // draw updated segment using new values
+#ifndef TRUCE_LVGL
                 tft.drawLine(x0, rssiY(curr), x1, rssiY(next_val), bruceConfig.priColor);
+#endif
                 prev = curr;
             }
+#ifdef TRUCE_LVGL
+            uint8_t envelope[256];
+            truce::signalEnvelope(envelope,signal.size(),[&](size_t i){return signal[i];},-95,-20);
+            truce::spectrumTrace(envelope,nullptr,1,0);
+            truce::graphicStatus(String(bruceConfigPins.rfFreq,2)+" MHz • "+String(rssi)+" dBm • escala −95 a −20 dBm");
+#else
             tft.drawFastVLine(axisX, top, bot - top, bruceConfig.priColor);
+#endif
             vTaskDelay(pdMS_TO_TICKS(75));
         }
         // draw a bargraph similar to nrf24 across the range
@@ -410,18 +470,31 @@ void rf_CC1101_rssi() {
                 setMHZ(subghz_frequency_list[range_limits[bruceConfigPins.rfScanRange][0] + i]);
                 vTaskDelay(pdMS_TO_TICKS(5));
                 int rssi = ELECHOUSE_cc1101.getRssi();
+#ifndef TRUCE_LVGL
                 tft.drawPixel(0, 0, 0); // To make sure CC1101 shared with TFT works properly
+#endif
                 int size = map(rssi, -95, -20, 0, max_bar_size);
                 if (size > bar_size[i]) bar_size[i] = size;
                 else bar_size[i] = bar_size[i] - (bar_size[i] - size) / 2; // slow down decrease
+#ifndef TRUCE_LVGL
                 tft.fillRect(
                     rf_plot_left() + i * space, bot - bar_size[i], space - 2, bar_size[i], bruceConfig.priColor
                 );
                 tft.fillRect(
                     rf_plot_left() + i * space, top, space, max_bar_size - bar_size[i], bruceConfig.bgColor
                 );
+#endif
                 if (bar_size[i] > bar_size[max_idx] && bar_size[i] > min_value) max_idx = i;
             }
+#ifdef TRUCE_LVGL
+            uint8_t envelope[256];
+            truce::signalEnvelope(envelope,range,[&](size_t i){return bar_size[i];},0,max_bar_size);
+            truce::spectrumTrace(envelope,nullptr,1,0);truce::spectrumRow(envelope);
+            const int ticks[]={0,255};const int base=range_limits[bruceConfigPins.rfScanRange][0];
+            const String labels[]={String(subghz_frequency_list[base],3)+" MHz",String(subghz_frequency_list[base+range-1],3)+" MHz"};
+            truce::spectrumRuler(ticks,labels,2,-1);
+            truce::graphicStatus("Pico em "+String(subghz_frequency_list[base+max_idx],2)+" MHz");
+#else
             if (bar_size[max_idx] > min_value) {
                 char buf[8];
                 float var = subghz_frequency_list[range_limits[bruceConfigPins.rfScanRange][0] + max_idx];
@@ -430,6 +503,7 @@ void rf_CC1101_rssi() {
                 tft.drawCentreString("Max=       ", tftWidth / 2, bot + 2, 1);
                 tft.drawCentreString("Max=" + String(buf), tftWidth / 2, bot + 2, 1);
             }
+#endif
         }
         if (check(EscPress)) { break; }
         if (check(SelPress)) {

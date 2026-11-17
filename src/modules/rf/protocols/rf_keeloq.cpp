@@ -14,7 +14,7 @@
 #include "rf_stream.h" // engine keystore primitives (add_key/clear_keys)
 #endif
 #include <Arduino.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <cstdlib>
 #include <cstring>
 #include <mbedtls/aes.h>

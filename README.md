@@ -1,320 +1,136 @@
-![Bruce Main Menu](./media/pictures/bruce_banner.jpg)
+# Truce para M5Stack Tab5
 
-# :shark: Bruce
+**Português (Brasil)** · [English](README.en.md) · [Documentação técnica](TRUCE_TAB5.md)
 
-Bruce is a versatile ESP32 firmware packed with offensive-security tools, built to make Red Team operations fast and portable.
+Truce é uma adaptação do [Bruce](https://github.com/BruceDevices/Firmware) para o **M5Stack Tab5**, com interface em **LVGL 9.3**, cartões com ícones, três temas e arquivos no microSD em **`/truce`**. O visual usa o Launcher_do_Paludo como referência. Este repositório contém as alterações específicas do Tab5; a documentação e os créditos do projeto de origem estão preservados no [README original do Bruce](README_BRUCE.md).
 
-It also supports [M5Stack](https://shop.m5stack.com), [LILYGO](https://lilygo.cc) , [RockBase IoT](https://www.rockbaseiot.com) and [Elecrow](https://www.elecrow.com) products, and works great with the Cardputer, Sticks, M5Cores, T-Decks and T-Embeds.
+![Menu inicial do Truce no tema claro, emulado em 1280×720](imagens/telas/claro/horizontal/1280-home-light.png)
 
-## :zap: Get Our Official DevKit!
+**Licença:** [AGPL-3.0-or-later](LICENSE), a mesma do Bruce original. Esta é uma versão modificada; as alterações de 16/11/2026 e os créditos estão registrados em [NOTICE.md](NOTICE.md).
 
-# RF REAPER
+## Interface e navegação
 
-**RF REAPER** is our custom PCB devkit, purpose-built for Bruce!
+- Tela inicial e menus em cartões, com navegação por toque e teclado.
+- Temas **Grafite**, **Oceano** e **Claro**, com ícones e fontes de apoio no microSD.
+- Telas de execução com status ampliado e botões na lateral direita. As ações disponíveis seguem os comandos de cada módulo.
+- Painéis com até 48 campos roláveis para leituras, configurações e informações de dispositivos.
+- Listas Wi-Fi/BLE com sinal e metadados; confirmações, detalhes e pacotes em componentes LVGL.
+- Terminais SSH, Telnet e UART, leitores de texto, espectros, cascata, relógio, temporizador, analisador lógico e jogo Megalodon com interfaces nativas.
+- Tradução de textos da interface para pt-BR. Nomes de redes, endereços, arquivos, comandos e dados capturados são preservados.
 
-Every major feature works natively, right out of the box. Sub-GHz, NFC/RFID, IR, 2.4GHz(NRF), GPS-ready, and a microSD, all driven by a beefy ESP32-S3 (16MB Flash / 8MB PSRAM). Tons of GPIOs via the AW9523 expander plus Flipper Zero & iButton header compatibility mean you can hack, mod, and build on it endlessly. Want a specific function? Ask us with an issue, we'll check it.
+As opções internas de menu começam em um painel LVGL. A moldura compartilhada e os títulos dinâmicos também usam esse padrão. Scripts JavaScript externos continuam controlando seus próprios desenhos.
 
-👉 **[Buy the RF REAPER and official boards](https://shop.bruce.computer)**
+### Temas
 
-**Check our fully open-source hardware too:** https://bruce.computer/boards
+| Grafite | Oceano | Claro |
+| --- | --- | --- |
+| ![Menu no tema Grafite](imagens/telas/grafite/horizontal/1280-home-graphite.png) | ![Menu no tema Oceano](imagens/telas/oceano/horizontal/1280-home-ocean.png) | ![Menu no tema Claro](imagens/telas/claro/horizontal/1280-home-light.png) |
 
-More custom devkit boards coming soon! Stay across our communities!
+### Redes e dispositivos
 
-## :building_construction: How to install
+| Redes Wi-Fi | Dispositivos BLE |
+| --- | --- |
+| ![Lista Wi-Fi com sinal, segurança e canal](imagens/telas/claro/horizontal/1280-discovery-2-0.png) | ![Lista BLE com sinal e endereço](imagens/telas/claro/horizontal/1280-discovery-2-1.png) |
 
-### The easiest way to install Bruce is using our official Web Flasher!
+Os cartões separam o nome dos metadados. As informações completas e as ações ficam nas telas de detalhes e nos menus correspondentes.
 
-### Check out: https://bruce.computer/flasher
+### Execução e instrumentos
 
-Alternatively, you can download the latest binary from releases or actions and flash locally using esptool.py
+| Painel Bluetooth | Analisador lógico |
+| --- | --- |
+| ![Painel Bluetooth com status e controles laterais](imagens/revisao/claro/horizontal/1280-review-2-ble-running.png) | ![Analisador lógico com quatro canais](imagens/telas/claro/horizontal/1280-logic-2.png) |
+
+O analisador lógico apresenta até quatro canais e mantém visíveis transições menores que uma coluna do gráfico. Nos painéis, a área de dados rola sem deslocar os controles laterais.
+
+**Todas as imagens acima são capturas da emulação LVGL com dados sintéticos.** Elas demonstram a apresentação, sem executar conexões de rádio, ataques ou periféricos. O exemplo Bluetooth usa o componente de painel com dados de demonstração.
+
+## Galeria de imagens
+
+A pasta [imagens](imagens/) contém **748 PNGs** nos três temas, em **1280×720** e **720×1280**:
+
+| Conjunto | Imagens | Conteúdo |
+| --- | ---: | --- |
+| Telas | 154 | Componentes nativos, navegação e estados de teste |
+| Revisão | 72 | Exemplos legíveis de 12 telas, com dados sintéticos |
+| Catálogo de estresse | 522 | 87 títulos no painel compartilhado de 48 campos |
+
+Abra **[imagens/index.html](imagens/index.html)** localmente para buscar telas e filtrar por tema, orientação e conjunto. Na visualização do GitHub, abra os PNGs diretamente ou baixe a pasta para usar a galeria. O [manifesto](imagens/manifesto.json) registra dimensões, origem e hashes. O catálogo de estresse valida o painel compartilhado; não representa a execução dos 87 módulos.
+
+## Instalação no Tab5
+
+O build atual usa **`esp32p4_es`** e foi inicializado em um **ESP32-P4 revisão 1.3**. Outras revisões de silício precisam de verificação de compatibilidade antes da gravação.
+
+1. Copie a pasta **`sdcard/truce` inteira** para a raiz de um microSD FAT32. O resultado deve ser `/truce/config`, `/truce/themes`, `/truce/fonts` etc.
+2. Com o **Launcher_do_Paludo**, instale **`Truce-Tab5-app.bin`**, a imagem que contém somente a aplicação, disponível em `dist/` após o empacotamento.
+3. Insira o microSD e abra o aplicativo pelo Launcher. Sem cartão, a aplicação mostra a tela de recuperação e aguarda.
+
+**Não grave a imagem combinada no endereço `0x0` de um dispositivo com Launcher.** Ela substitui o bootloader e a tabela de partições. A instalação direta, sem Launcher, usa outro procedimento, descrito no [guia técnico](TRUCE_TAB5.md#instalação-direta-sem-launcher).
+
+Para manutenção por USB preservando o Launcher, o utilitário lê a tabela real de partições e verifica o espaço do slot antes de gravar:
 
 ```sh
-esptool.py --port /dev/ttyACM0 write_flash 0x00000 Bruce-<device>.bin
+python3 tools/flash_truce_slot.py --port <porta-serial> --slot <slot-do-truce> --dry-run
+python3 tools/flash_truce_slot.py --port <porta-serial> --slot <slot-do-truce>
 ```
 
-**For m5stack devices**
+Selecione o slot existente do Truce. Não reutilize endereços de flash de outra instalação.
 
-If you already use M5Launcher to manage your m5stack device, you can install it with OTA
+## Arquivos e configurações
 
-Or you can burn it directly from the [m5burner tool](https://docs.m5stack.com/en/download), just search for 'Bruce' (My official builds will be uploaded by "owner" and have photos.) on the device category you want to and click on burn
+```text
+/truce/
+  config/                  Configurações da interface, módulos e pinos
+  boot/shark.png           Imagem da abertura
+  fonts/                   Fontes de apoio e mostradores
+  themes/                  Temas JSON e ícones
+  preferences/             Preferências dos módulos
+  logs/                    Registros
+  apps_data/               Dados dos aplicativos
+```
 
-## :keyboard: Discord Server
+Configurações e arquivos persistentes da aplicação ficam no microSD. O Truce não usa NVS, SPIFFS ou LittleFS na flash para armazenar esses dados. Os acessos legados a LittleFS são redirecionados ao microSD. O firmware executável permanece na flash; as partições próprias do Launcher são preservadas na atualização da aplicação.
 
-Contact us in our [Discord Server](https://discord.gg/WJ9XF9czVT)!
+Os caminhos antigos dos módulos são relativos a `/truce`. Recursos adicionais de `sd_files` devem ser copiados para dentro dessa pasta. Consulte o [guia técnico](TRUCE_TAB5.md) para a estrutura completa e os detalhes da persistência.
 
-## :bookmark_tabs: Wiki
+## Compilar, testar e gerar imagens
 
-For more information on each function supported by Bruce, [read our wiki here](https://wiki.bruce.computer/).
-Also, [read our FAQ](https://wiki.bruce.computer/faq/)
+Antes de compilar, clone o repositório com os submódulos:
 
-## :computer: List of Features
+```sh
+git clone --recurse-submodules https://github.com/tpklge/Tab5Truce.git
+cd Tab5Truce
+```
 
-<details>
-  <summary><h2>WiFi</h2></summary>
+Execute na raiz deste repositório, com PlatformIO, CMake e um compilador C/C++ instalados:
 
-- [x] Connect to WiFi
-- [x] WiFi AP
-- [x] Disconnect WiFi
-- [x] [WiFi Atks](https://wiki.bruce.computer/features/wifi/#wifi-atks)
-  - [x] [Beacon Spam](https://wiki.bruce.computer/features/wifi/#beacon-spam)
-  - [x] [Target Atk](https://wiki.bruce.computer/features/wifi/#target-atks)
-    - [x] Information
-    - [x] Target Deauth
-    - [x] EvilPortal + Deauth
-  - [x] Deauth Flood (More than one target)
-- [x] [Wardriving](https://wiki.bruce.computer/features/gps/#wardriving)
-- [x] [TelNet](https://wiki.bruce.computer/features/wifi/#telnet)
-- [x] [SSH](https://wiki.bruce.computer/features/wifi/#ssh)
-- [x] [RAW Sniffer](https://wiki.bruce.computer/features/wifi/#raw-sniffer)
-- [x] [TCP Client](https://wiki.bruce.computer/features/wifi/#client-tcp)
-- [x] [TCP Listener](https://wiki.bruce.computer/features/wifi/#listen-tcp)
-- [x] [Evil Portal](https://wiki.bruce.computer/features/wifi/#evil-portal)
-- [x] [Scan Hosts](https://wiki.bruce.computer/features/wifi/#scan-hosts) (with TCP Port scanning)
-- [x] [Responder](https://wiki.bruce.computer/features/wifi/#responder)
-- [x] [Arp Spoofing](https://wiki.bruce.computer/features/wifi/#arp-spoofing)
-- [x] [Arp Poisoning](https://wiki.bruce.computer/features/wifi/#arp-poisoning)
-- [x] [Wireguard Tunneling](https://wiki.bruce.computer/features/wifi/#wireguard-tunneling)
-- [x] Brucegotchi
-  - [x] Pwnagotchi friend
-  - [x] Pwngrid spam faces & names
-    - [x] [Optional] DoScreen a very long name and face
-    - [x] [Optional] Flood uniq peer identifiers
+```sh
+pio run -e m5stack-tab5
+cmake -S tests/truce -B /tmp/truce-ui-host
+cmake --build /tmp/truce-ui-host -j 6
+ctest --test-dir /tmp/truce-ui-host --output-on-failure
+python3 tools/check_truce_assets.py
+python3 tools/check_truce_storage.py
+python3 tools/export_truce_images.py --source /tmp/truce-ui-host/screenshots
+python3 tools/package_truce.py
+```
 
-</details>
+A compilação do firmware disponibiliza as dependências LVGL usadas pelo simulador. O simulador compila o mesmo `ui_view.cpp` do firmware com **AddressSanitizer e UndefinedBehaviorSanitizer**. A exportação converte o framebuffer em PNG e usa o índice da última execução para excluir capturas antigas.
 
-<details>
-  <summary><h2>BLE</h2></summary>
+O pacote gerado é `dist/Truce-Tab5.zip`. Ele inclui imagens de firmware para procedimentos distintos: escolha a imagem de aplicação ao usar o Launcher.
 
-- [x] [BLE Scan](https://wiki.bruce.computer/features/ble/#ble-scan)
-- [x] Bad BLE - Run Ducky scripts, similar to [BadUsb](https://wiki.bruce.computer/features/ble/#badble)
-- [x] BLE Keyboard - Cardputer and T-Deck Only
-- [x] iOS Spam
-- [x] Windows Spam
-- [x] Samsung Spam
-- [x] Android Spam
-- [x] Spam All
-</details>
+## Validação e limites
 
-<details>
-  <summary><h2>RF</h2></summary>
+| Verificação | Resultado registrado |
+| --- | --- |
+| Layout e navegação simulados | **812 cenários e 1.174 toques**, três temas e duas orientações |
+| Capturas da emulação | **748 PNGs**, com manifesto e galeria |
+| Inicialização no Tab5 revisão 1.3 | Menu em **2,17 s** após o início da aplicação; não inclui o Launcher |
+| Memória interna após navegação | Aproximadamente **225 KB livres** |
+| Menus no aparelho | Wi-Fi, BLE, ferramentas de fio, configurações, utilitários e arquivos, por comandos seriais |
+| Observação em repouso | 30 segundos, sem reinício após a inicialização ou seleção inesperada no teste |
 
-- [x] Scan/Copy
-- [x] [Custom SubGhz](https://wiki.bruce.computer/features/rf/#replay-payloads-like-flipper)
-- [x] Spectrum
-- [x] Jammer Full (sends a full squared wave into output)
-- [x] Jammer Intermittent (sends PWM signal into output)
-- [x] Config
-  - [x] RF TX Pin
-  - [x] RF RX Pin
-  - [x] RF Module
-    - [x] RF433 T/R M5Stack
-    - [x] [CC1101 (Sub-Ghz)](https://wiki.bruce.computer/features/rf/#cc1101)
-  - [x] RF Frequency
-- [x] Replay
-</details>
+Os resultados de hardware estão em [boot-hardware.json](artifacts/truce-ui/boot-hardware.json), e os testes simulados em [simulation.txt](artifacts/truce-ui/simulation.txt). A revisão não executou ataques nem validou conexões de rádio, periféricos externos ou toque físico com o dedo. Alto-falante e microfone permanecem desabilitados no backend atual do Tab5; a existência das telas de áudio não comprova suporte funcional de áudio.
 
-<details>
-  <summary><h2>RFID</h2></summary>
+## Origem e licença
 
-- [x] Read tag
-- [x] Read 125kHz
-- [x] Clone tag
-- [x] Write NDEF records
-- [x] Amiibolink
-- [x] Chameleon
-- [x] Write data
-- [x] Erase data
-- [x] Save file
-- [x] Load file
-- [x] Config
-  - [x] [RFID Module](https://wiki.bruce.computer/features/rfid/#supported-modules)
-    - [x] PN532
-    - [x] PN532Killer
-- [ ] Emulate tag
-</details>
-
-<details>
-  <summary><h2>IR</h2></summary>
-
-- [x] TV-B-Gone
-- [x] IR Receiver
-- [x] [Custom IR (NEC, NECext, SIRC, SIRC15, SIRC20, Samsung32, RC5, RC5X, RC6)](https://wiki.bruce.computer/features/ir/#replay-payloads-like-flipper)
-- [x] Config - [X] Ir TX Pin - [X] Ir RX Pin
-</details>
-
-<details>
-  <summary><h2>FM</h2></summary>
-
-- [x] [Broadcast standard](https://wiki.bruce.computer/features/fm/#broadcast-standard)
-- [x] [Broadcast reserved](https://wiki.bruce.computer/features/fm/#broadcast-standard)
-- [x] [Broadcast stop](https://wiki.bruce.computer/features/fm/#broadcast-stop)
-- [ ] [FM Spectrum](https://wiki.bruce.computer/features/fm/#fm-spectrum)
-- [ ] [Hijack Traffic Announcements](https://wiki.bruce.computer/features/fm/#hijack-ta)
-- [ ] [Config](https://wiki.bruce.computer/features/fm/#bookmark_tabs-config)
-</details>
-
-<details>
-  <summary><h2>NRF24</h2></summary>
-
-- [x] [NRF24 Jammer](https://wiki.bruce.computer/features/nrf24/)
-- [x] 2.4G Spectrum
-- [ ] Mousejack
-</details>
-
-<details>
-  <summary><h2>Scripts</h2></summary>
-
-- [x] [JavaScript Interpreter](https://wiki.bruce.computer/features/js-interpreter/) [Credits to justinknight93](https://github.com/justinknight93/Doolittle)
-</details>
-
-<details>
-  <summary><h2>Others</h2></summary>
-
-- [x] Mic Spectrum
-- [x] [QRCodes](https://wiki.bruce.computer/features/others/#qrcodes)
-  - [x] Custom
-  - [x] PIX (Brazil bank transfer system)
-- [x] [SD Card Mngr](https://github.com/pr3y/Bruce/wiki/Others#sd-card-mngr)
-  - [x] View image (jpg)
-  - [x] File Info
-  - [x] [Wigle Upload](https://wiki.bruce.computer/features/gps/#how-to-use-wigle)
-  - [x] Play Audio
-  - [x] View File
-- [x] LittleFS Mngr
-- [x] [WebUI](https://wiki.bruce.computer/controlling-device/webui/)
-  - [x] Server Structure
-  - [x] Html
-  - [x] SDCard Mngr
-  - [x] Spiffs Mngr
-- [x] Megalodon
-- [x] [BADUsb (New features, LittleFS and SDCard)](https://wiki.bruce.computer/features/others/#badusb)
-- [x] USB Keyboard - Cardputer and T-Deck Only
-- [x] [iButton](https://wiki.bruce.computer/features/others/#ibutton)
-- [x] LED Control
-</details>
-
-<details>
-  <summary><h2>Wire Tools</h2></summary>
-
-- [x] UART Terminal
-  - [x] Baudrate presets + custom (300..5000000)
-  - [x] Custom RX/TX pins (Config > UART Pins)
-  - [x] Live send/receive terminal
-- [x] I2C Bus
-  - [x] Device scan (0x08-0x77)
-  - [x] Register read/write
-  - [x] 256-byte register dump
-- [x] SPI Bus
-  - [x] JEDEC flash detect
-  - [x] CS-framed HEX console (arbitrary transfers)
-- [x] JTAG Scanner
-  - [x] IDCODE read (TAP reset + DR shift, bit-banged TCK/TMS/TDI/TDO)
-- [x] Multimeter
-  - [x] Continuity: pin <-> pin (A driven LOW, B pulled up) with beeper
-  - [x] Continuity: pin -> GND (internal pull-up) with beeper
-  - [x] Held-pin detection (probe driven by another device, e.g. ADV Grove on CH9329)
-- [x] Serial control: `wire uart|i2c|spi|jtag|cont ...` commands over the serial CLI
-</details>
-
-<details>
-  <summary><h2>Clock</h2></summary>
-
-- [x] RTC Support
-- [x] NTP time adjust
-- [x] Manual adjust
-</details>
-
-<details>
-  <summary><h2>Connect (ESPNOW)</h2></summary>
-
-- [x] Send File
-- [x] Receive File
-- [x] Send Commands
-- [x] Receive Commands
-</details>
-
-<details>
-  <summary><h2>Config</h2></summary>
-
-- [x] Brightness
-- [x] Dim Time
-- [x] Orientation
-- [x] UI Color
-- [x] Boot Sound on/off
-- [x] Clock
-- [x] Sleep
-- [x] Restart
-</details>
-
-## Specific functions per Device, the ones not mentioned here are available to all.
-
-| Device                                                                                                                                                                                      | CC1101 | NRF24 | FM Radio |        PN532         | Mic  | BadUSB | RGB Led | Speaker | Fuel Gauge | LITE_VERSION |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: | :---: | :------: | :------------------: | :--: | :----: | :-----: | :-----: | :--------: | :----------: |
-| [M5Stack Cardputer](https://shop.m5stack.com/products/m5stack-cardputer-kit-w-m5stamps) (and ADV)                                                                                           |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: |  :ok:  |  :ok:   | NS4168  |    :x:     |     :x:      |
-| [M5Stack M5StickC PLUS2](https://shop.m5stack.com/products/m5stickc-plus2-esp32-mini-iot-development-kit)                                                                                   |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: | :ok:¹  |   :x:   |  Tone   |    :x:     |     :x:      |
-| [M5Stack M5StickC PLUS](https://shop.m5stack.com/products/m5stickc-plus-esp32-pico-mini-iot-development-kit)                                                                                |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: | :ok:¹  |   :x:   |  Tone   |    :x:     |     :x:²     |
-| [M5Stack M5Core BASIC](https://shop.m5stack.com/products/basic-core-iot-development-kit)                                                                                                    |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: | :ok:¹  |   :x:   |  Tone   |    :x:     |     :x:      |
-| [M5Stack M5Core2](https://shop.m5stack.com/products/m5stack-core2-esp32-iot-development-kit-v1-1)                                                                                           |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: | :ok:¹  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [M5Stack M5CoreS3](https://shop.m5stack.com/products/m5stack-cores3-esp32s3-lotdevelopment-kit)/[SE](https://shop.m5stack.com/products/m5stack-cores3-se-iot-controller-w-o-battery-bottom) |  :ok:  | :ok:  |   :ok:   |         :ok:         | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [M5Stack StackChan](https://shop.m5stack.com/products/stackchan-kawaii-co-created-open-source-ai-desktop-robot) (CoreS3 on the robot body)                                                  |  :ok:  | :ok:  |   :ok:   |    ST25R3916 (I2C)   | :x:  |  :ok:  |   :x:   | AW88298 |    :x:     |     :x:      |
-| [JCZN CYD&#x2011;2432S028](https://www.aliexpress.us/item/3256804774970998.html)                                                                                                            |  :ok:  | :ok:  |   :ok:   |         :ok:         | :x:  | :ok:¹  |   :x:   |   :x:   |    :x:     |     :x:²     |
-| [Lilygo T&#x2011;Embed CC1101](https://lilygo.cc/products/t-embed-cc1101)                                                                                                                   |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: |  :ok:  |  :ok:   |  :ok:   |    :ok:    |     :x:      |
-| [Lilygo T&#x2011;Embed](https://lilygo.cc/products/t-embed)                                                                                                                                 |  :ok:  | :ok:  |   :ok:   |         :ok:         | :ok: |  :ok:  |  :ok:   |  :ok:   |    :x:     |     :x:      |
-| [Lilygo T-Display-S3](https://lilygo.cc/products/t-display-s3)                                                                                                                              |  :ok:  | :ok:  |   :x:    |         :x:          | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [Lilygo T&#x2011;Deck](https://lilygo.cc/products/t-deck) ([and pro](https://lilygo.cc/products/t-deck-plus-1))                                                                             |  :ok:  |  :x:  |   :x:    |         :x:          | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [Lilygo T-Watch-S3](https://lilygo.cc/products/t-watch-s3)                                                                                                                                  |  :x:   |  :x:  |   :x:    |         :x:          | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [Lilygo T-LoRa Pager](https://lilygo.cc/products/t-lora-pager)                                                                                                                              |  :x:   |  :x:  |   :x:    |         :x:          | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [Smoochiee V2](https://www.pcbway.com/project/shareproject/Bruce_PCB_Smoochiee_d6a0284b.html)                                                                                               |  :ok:  | :ok:  |   :x:    |         :ok:         | :x:  |  :ok:  |   :x:   |   :x:   |    :x:     |     :x:      |
-| [ESP32-C5](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c5/esp32-c5-devkitc-1/user_guide.html)                                                                           |  :ok:  | :ok:  |   :x:    |         :ok:         | :x:  |  :x:   |   :x:   |   :x:   |    :x:     |     :x:      |
-| [Bruce RF Reaper](https://www.elecrow.com/bruce-pcb-rf-reaper.html)                                                                                                                         |  :ok:  | :ok:  |   :x:    | :ok: but w/ ST25R3916 | :x:  |  :ok:  |  :ok:   |   :x:   |    :ok:    |     :x:      |
-| [Elecrow 24B](https://www.elecrow.com/2-4inch-esp32-miner-lcd-display-2pcs-cryptocurrency-solo-miner-with-1000kh-s-hashrate.html)                                                            |  :ok:  | :ok:  |   :ok:   |         :ok:         | :x:  | :ok:¹  |   :x:   |   :x:   |    :x:     |     :x:²     |
-| [Elecrow 3.5"](https://www.elecrow.com/esp-terminal-with-esp32-3-5-inch-parallel-480x320-tft-capacitive-touch-display-rgb-by-chip-ili9488.html)                                                                                                                                                        |  :ok:  | :ok:  |   :ok:   |         :ok:         | :x:  | :ok:¹  |   :x:   |   :x:   |    :x:     |     :x:²     |
-| [NM-CYD-C5 + RF HAT](https://rockbase.shop/products/nm-cyd-c5-colorful)                                                                                                                         |  :ok:  | :ok:  |   :x:    | :ok: | :x:  |  :ok:  |  :ok:   |   :x:   |    :ok:    |     :x:      |
-| [Waveshare ESP32-C5-Touch-LCD-3.5](https://github.com/waveshareteam/ESP32-C5-Touch-LCD-3.5) |  :x:  | :x:  |   :x:    | :ok: | :ok: |  :x:   |  :x:   |  :ok:   |    :ok:    |     :x:      |
-² CYD have a LITE_VERSION version for Launcher Compatibility
-¹ Core, CYD and StickCs Bad-USB: [here](https://wiki.bruce.computer/features/others/#badusb)
-
-_LITE_VERSION_: TelNet, SSH, WireGuard, ScanHosts, RawSniffer, Brucegotchi, BLEBacon, BLEScan and Interpreter are NOT available for M5Launcher Compatibility
-
-## :sparkles: Why and how does it look?
-
-Bruce stems from a keen observation within the community focused on devices like Flipper Zero. While these devices offered a glimpse into the world of offensive security, there was a palpable sense that something more could be achieved without being that overpriced, particularly with the robust and modular hardware ecosystem provided by ESP32 Devices, Lilygo and M5Stack products.
-
-![Bruce Main Menu](./media/pictures/pic1.png)
-![Bruce on M5Core](./media/pictures/core.png)
-![Bruce on Stick](./media/pictures/stick.png)
-![Bruce on CYD](./media/pictures/cyd.png)
-![Bruce on CYD with NM-RF-HAT](./media/pictures/bruce-cyd.png)
-
-Other media can be [found here](./media/).
-
-## :clap: Acknowledgements
-
-- [@bmorcelli](https://github.com/bmorcelli) for new core and a bunch of new features, also porting to many devices!
-- [@IncursioHack](https://github.com/IncursioHack) for adding RF and RFID modules features.
-- [@Luidiblu](https://github.com/Luidiblu) for logo and UI design assistance.
-- [@eadmaster](https://github.com/eadmaster) for adding a lot of features.
-- [@rennancockles](https://github.com/rennancockles) for a lot of RFID code, refactoring and others features.
-- [@7h30th3r0n3](https://github.com/7h30th3r0n3) refactoring and a lot of help with WiFi attacks.
-- [@Tawank](https://github.com/Tawank) refactoring interpreter among many other things
-- [@geo-tp](https://github.com/geo-tp) contributing with lots of PRs and Wire Tools code
-- @pablonymous RF functions to read RAW Data
-- [Smoochiee](https://github.com/smoochiee) for Bruce PCB design.
-- TH3_KR4K3N for Stick cplus extender PCB design.
-- Everyone who contributed in some way to the project, thanks :heart:
-
-Bruce also stands on the shoulders of other great open-source firmware projects,
-which inspired features and code across the project:
-
-- [ESP32Marauder](https://github.com/justcallmekoko/ESP32Marauder) by [@justcallmekoko](https://github.com/justcallmekoko) — WiFi/Bluetooth offensive toolkit.
-- [Launcher](https://github.com/bmorcelli/Launcher) by [@bmorcelli](https://github.com/bmorcelli) — the multi-app launcher/bootloader for the devices.
-- [Evil-M5Project](https://github.com/7h30th3r0n3/Evil-M5Project) by [@7h30th3r0n3](https://github.com/7h30th3r0n3) — WiFi attack suite for M5Stack.
-- [M5Stick-Nemo](https://github.com/n0xa/m5stick-nemo) by [@n0xa](https://github.com/n0xa) — multi-tool firmware for M5Stick devices.
-
-Bruce builds on many free-software libraries, and parts of the RF and NFC/RFID
-modules are derived from other projects. See [THIRD_PARTY.md](./THIRD_PARTY.md)
-for third-party attribution and copyleft-compliance details.
-
-## :construction: Disclaimer
-
-Bruce is a tool for cyber offensive and red team operations, distributed under the terms of the Affero General Public License (AGPL). It is intended for legal and authorized security testing purposes only. Use of this software for any malicious or unauthorized activities is strictly prohibited. By downloading, installing, or using Bruce, you agree to comply with all applicable laws and regulations. This software is provided free of charge, and we do not accept payments for copies or modifications. The developers of Bruce assume no liability for any misuse of the software. Use at your own risk.
+Baseado no [BruceDevices/Firmware](https://github.com/BruceDevices/Firmware), com agradecimento aos seus autores e contribuidores. Créditos e documentação originais: [README_BRUCE.md](README_BRUCE.md). Atribuições de dependências: [THIRD_PARTY.md](THIRD_PARTY.md). Licença do repositório: [GNU AGPL v3 ou posterior](LICENSE).

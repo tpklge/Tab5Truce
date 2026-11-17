@@ -13,6 +13,9 @@ void BruceTheme::removeTheme(void) {
     theme = t;
 }
 FS *BruceTheme::themeFS(void) {
+#ifdef TRUCE_SD_ONLY
+    return &SD;
+#endif
     if (theme.fs == 1) return &LittleFS;
     else if (theme.fs == 2) return &SD;
     return &LittleFS; // always get back to safety

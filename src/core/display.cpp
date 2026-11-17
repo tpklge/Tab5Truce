@@ -1,3 +1,4 @@
+#include "truce/runtime.h"
 #include "display.h"
 #include "hal/power/gauge.h"
 #include "core/wifi/webInterface.h" // for server
@@ -193,6 +194,9 @@ std::vector<String> wrapText(const String &text, int maxCharsPerLine) {
 ** Description:   Display Red Stripe with information (supports multi-line text wrapping)
 ***************************************************************************************/
 void displayRedStripe(const String &text, uint16_t fgcolor, uint16_t bgcolor) {
+#ifdef TRUCE_LVGL
+    if(truce::statusNotice(text))return;
+#endif
     // detect if not running in interactive mode -> show nothing onscreen and return immediately
     // if (server || isSleeping || isScreenOff) return; // webui is running
 
@@ -252,6 +256,13 @@ int8_t displayMessage(
     uint16_t color
 ) {
 
+#ifdef TRUCE_LVGL
+    std::vector<String> actions;
+    if(leftButton)actions.emplace_back(leftButton);
+    if(centerButton)actions.emplace_back(centerButton);
+    if(rightButton)actions.emplace_back(rightButton);
+    return truce::prompt("Mensagem",message?String(message):String(""),actions,0,true);
+#endif
     uint8_t oldTextDatum = tft.getTextDatum();
 
     tft.setTextColor(color);
@@ -345,6 +356,9 @@ int8_t displayMessage(
 }
 
 void displayError(const String &txt, bool waitKeyPress) {
+#ifdef TRUCE_LVGL
+    if(waitKeyPress && truce::notice(txt,"Não foi possível continuar"))return;
+#endif
     displayRedStripe(txt);
     Serial.println("ERR: " + txt);
 #ifdef USE_DUMMY_TFT
@@ -355,6 +369,9 @@ void displayError(const String &txt, bool waitKeyPress) {
 }
 
 void displayWarning(const String &txt, bool waitKeyPress) {
+#ifdef TRUCE_LVGL
+    if(waitKeyPress && truce::notice(txt,"Atenção"))return;
+#endif
     displayRedStripe(txt, TFT_BLACK, TFT_YELLOW);
     Serial.println("WARN: " + txt);
 #ifdef USE_DUMMY_TFT
@@ -365,6 +382,9 @@ void displayWarning(const String &txt, bool waitKeyPress) {
 }
 
 void displayInfo(const String &txt, bool waitKeyPress) {
+#ifdef TRUCE_LVGL
+    if(waitKeyPress && truce::notice(txt,"Informação"))return;
+#endif
     displayRedStripe(txt, TFT_WHITE, TFT_BLUE);
     Serial.println("INFO: " + txt);
 #ifdef USE_DUMMY_TFT
@@ -375,6 +395,9 @@ void displayInfo(const String &txt, bool waitKeyPress) {
 }
 
 void displaySuccess(const String &txt, bool waitKeyPress) {
+#ifdef TRUCE_LVGL
+    if(waitKeyPress && truce::notice(txt,"Concluído"))return;
+#endif
     displayRedStripe(txt, TFT_WHITE, TFT_DARKGREEN);
     Serial.println("SUCCESS: " + txt);
 #ifdef USE_DUMMY_TFT
@@ -385,6 +408,9 @@ void displaySuccess(const String &txt, bool waitKeyPress) {
 }
 
 void displayTextLine(const String &txt, bool waitKeyPress) {
+#ifdef TRUCE_LVGL
+    if(waitKeyPress && truce::notice(txt,"Estado"))return;
+#endif
     displayRedStripe(txt, getComplementaryColor2(bruceConfig.priColor), bruceConfig.priColor);
     Serial.println("MESSAGE: " + txt);
 #ifdef USE_DUMMY_TFT
@@ -547,6 +573,9 @@ int loopOptions(
     bool letterShortcuts, uint16_t pageJumpSize, bool border, bool compact
 ) {
     if (options.empty()) return -1;
+#ifdef TRUCE_LVGL
+    return truce::menu(options, menuType, subText, index, interpreter);
+#endif
 
     bool useTapToSelect = menuType == MENU_TYPE_REGULAR ||
                           (bruceConfig.mainMenuStyle == MAIN_MENU_GRID && menuType == MENU_TYPE_MAIN);
@@ -1271,6 +1300,35 @@ void drawSubmenu(int index, std::vector<Option> &options, const char *title) {
 
 void drawStatusBar() {
     uint8_t bat = getBattery();
+#ifdef BRUCE_TAB5_UI
+    if (mainMenuGridColumns > 0) {
+        tft.fillRect(0, 0, tftWidth, 76, bruceConfig.bgColor);
+        tft.setTextSize(3);
+        tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
+        tft.drawString("BRUCE", 32, 16, 1);
+        tft.setTextSize(2);
+        String status;
+        if (sdcardMounted) status += "SD   ";
+        if (WiFi.isConnected() || WiFi.AP.started()) status += "Wi-Fi   ";
+        if (BLEConnected) status += "BLE   ";
+        if (gpsConnected) status += "GPS   ";
+        if (isWebUIActive) status += "WEB   ";
+        if (isConnectedWireguard) status += "VPN   ";
+        status += String(bat) + "%";
+        tft.drawRightString(status, tftWidth - 32, 24, 1);
+        if (clock_set) {
+#if defined(HAS_RTC)
+            updateTimeStr(_rtc.getTimeStruct());
+#else
+            updateTimeStr(rtc.getTimeStruct());
+#endif
+            tft.drawString(timeStr, 32, 48, 1);
+        }
+        if (bruceConfig.theme.border)
+            tft.drawFastHLine(24, 72, tftWidth - 48, bruceConfig.secColor);
+        return;
+    }
+#endif
     if (bat > 0) drawBatteryStatus(bat);
 
     if (bruceConfig.theme.border) {
@@ -1374,6 +1432,9 @@ void drawStatusBar() {
 }
 
 void drawMainBorder(bool clear) {
+#ifdef TRUCE_LVGL
+    if(truce::operationBorder(clear))return;
+#endif
     if (clear) {
         tft.drawPixel(0, 0, 0);
         tft.fillScreen(bruceConfig.bgColor);
@@ -1391,11 +1452,17 @@ void drawMainBorder(bool clear) {
 }
 
 void drawMainBorderWithTitle(const String &title, bool clear) {
+#ifdef TRUCE_LVGL
+    if(truce::operationTitle(title))return;
+#endif
     drawMainBorder(clear);
     printTitle(title);
 }
 
 void printTitle(const String &title) {
+#ifdef TRUCE_LVGL
+    if(truce::operationTitle(title))return;
+#endif
     String t = title;
     t.toUpperCase();
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
@@ -1414,6 +1481,9 @@ void printTitle(const String &title) {
 }
 
 void printSubtitle(const String &subtitle, bool withLine) {
+#ifdef TRUCE_LVGL
+    if(truce::operationSubtitle(subtitle))return;
+#endif
     int16_t cursorX = (tftWidth - (subtitle.length() * FP * LW)) / 2;
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
     tft.setTextSize(FP);

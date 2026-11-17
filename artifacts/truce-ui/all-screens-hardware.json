@@ -1,0 +1,30 @@
+{
+  "application_sha256": "90663d8d5cd8c924936622d78ea90a7249b02669f0c28edb4b2de80346c1ee31",
+  "main_menu_reached": true,
+  "native_menu_navigation_tested": [
+    "WiFi",
+    "BLE",
+    "Wire Tools",
+    "Config",
+    "Others",
+    "Files"
+  ],
+  "idle_seconds": 30,
+  "attack_actions_executed": false,
+  "radio_connections_tested": false,
+  "chip": "ESP32-P4",
+  "chip_revision": "1.3",
+  "launcher_preserved": true,
+  "application_slot": 0,
+  "application_address": "0x210000",
+  "flash_write_hash_verified": true,
+  "setup_completed": true,
+  "usb_console_responded": true,
+  "first_main_menu_ms": 2170,
+  "internal_free_at_first_menu": 228212,
+  "largest_internal_block_at_first_menu": 180212,
+  "internal_free_after_navigation": 225540,
+  "resets_after_setup_observed": 0,
+  "unexpected_menu_selections": 0,
+  "physical_finger_touch_tested": false
+}

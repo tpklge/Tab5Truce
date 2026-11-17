@@ -1,0 +1,17 @@
+Truce — capturas da emulação LVGL
+
+Abra index.html para visualizar e filtrar as 748 imagens PNG.
+Organização: conjunto / tema / orientação / imagem.png.
+
+Telas: cenários dos componentes nativos, incluindo entradas longas e estados-limite.
+Revisão: exemplos legíveis das telas revisadas com dados sintéticos.
+Catálogo de estresse: títulos dos módulos sobre o painel compartilhado de 48 campos.
+Essas capturas não comprovam execução dos rádios ou dos periféricos físicos.
+São pixels exportados do LVGL real; não são mockups desenhados à parte.
+
+Para regenerar a partir de uma execução recente:
+  cmake --build /tmp/truce-ui-host -j 6
+  ctest --test-dir /tmp/truce-ui-host --output-on-failure
+  python3 tools/export_truce_images.py --source /tmp/truce-ui-host/screenshots
+
+manifesto.json registra títulos, dimensões, temas e SHA-256 dos PNGs.

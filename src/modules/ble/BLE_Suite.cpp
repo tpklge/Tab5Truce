@@ -12,6 +12,7 @@
 
 #if !defined(LITE_VERSION)
 #include "BLE_Suite.h"
+#include "core/truce/runtime.h"
 #include "HFP_Exploit.h"
 #include "ble_common.h"
 #include "core/display.h"
@@ -301,7 +302,7 @@ bool BLEStateManager::initBLE(const String &name, int powerLevel) {
     }
 
     if (!radioHasMemForBle()) {
-        displayError("Low RAM: free WiFi/SD first", true);
+        displayError(radioBleFailureMessage(), true);
         return false;
     }
 
@@ -3082,6 +3083,16 @@ static int bleListLoop(
     const char *title, int count, const String &hint, BleRowDrawer drawRow, int *cursor = nullptr
 ) {
     if (count <= 0) return -1;
+#ifdef TRUCE_LVGL
+    std::vector<Option> tiles;
+    for(int i=0;i<count;++i){
+        String label=truce::collectRow([&](){drawRow(i,0,100,tftWidth-48,false);});
+        tiles.emplace_back(label,[](){});
+    }
+    int chosen=truce::menu(tiles,MENU_TYPE_SUBMENU,title,cursor?*cursor:0,false,"Bluetooth");
+    if(cursor && chosen>=0)*cursor=chosen;
+    return chosen;
+#endif
     BleUiGeom g = bleUiGeom();
     int sel = (cursor && *cursor >= 0 && *cursor < count) ? *cursor : 0;
     int off = 0, lastSel = -1, lastOff = -1;
@@ -3909,6 +3920,9 @@ void BLE_Sniffer() {
     while (true) {
         if (redraw) {
             drawMainBorderWithTitle("BLE SNIFFER");
+#ifdef TRUCE_LVGL
+            truce::operationControls("",snifferPacketCount>0?"Salvar":"",snifferPacketCount>0?"Pacotes":"Capturar","Voltar");
+#endif
             padprintln("");
             padprintln("Press [SEL] to start/stop capture");
             padprintln("Press [ESC] to exit");
@@ -3967,6 +3981,9 @@ void BLE_Sniffer() {
 
             pScan->stop();
             drawMainBorderWithTitle("BLE SNIFFER");
+#ifdef TRUCE_LVGL
+            truce::operationControls("",snifferPacketCount>0?"Salvar":"",snifferPacketCount>0?"Pacotes":"Capturar","Voltar");
+#endif
             padprintln("");
             padprintln("Status: DONE");
             padprintln("Captured: " + String(snifferPacketCount) + " packets");
@@ -3981,6 +3998,20 @@ void BLE_Sniffer() {
             int scrollOffset = 0;
             bool viewing = true;
 
+#ifdef TRUCE_LVGL
+            while(viewing) {
+                std::vector<Option> packets;
+                for(const auto &packet:snifferPackets)packets.emplace_back(packet.name+"\n"+String(packet.rssi)+" dBm • "+packet.address,[](){});
+                int chosen=truce::menu(packets,MENU_TYPE_SUBMENU,"Dispositivos BLE",selected,false,"Bluetooth");
+                if(chosen<0)break;
+                selected=chosen;const auto &packet=snifferPackets[selected];
+                std::vector<String> details={"Nome: "+packet.name,"Endereço: "+packet.address,
+                    "RSSI: "+String(packet.rssi)+" dBm","Canal: "+String(packet.channel),
+                    "Tempo: "+packet.timestamp+" s","Payload: "+String(packet.payload.size())+" bytes",
+                    parseManufacturerData(packet.payload),packet.payloadHex};
+                truce::readDocument("Detalhes do pacote",details);
+            }
+#else
             while (viewing) {
                 int y = BORDER_PAD_Y + FM * LH + 4;
                 const int lineH = max(14, tftHeight / 12);
@@ -4099,6 +4130,7 @@ void BLE_Sniffer() {
                 }
                 delay(100);
             }
+#endif
             redraw = true; // main screen
         }
 
@@ -4200,7 +4232,11 @@ String selectTargetFromScan(const char *title) {
     g_pBLEScan->clearResults();
 
     BleUiGeom sg = bleUiGeom();
+#ifdef TRUCE_LVGL
+    truce::panelFrame(title,"Buscando dispositivos",{});truce::operationControls("","","","");
+#else
     drawMainBorderWithTitle(title);
+#endif
     tft.setTextSize(FP);
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
     tft.drawString("Scanning for devices...", sg.listL, sg.top, 1);
@@ -4213,6 +4249,9 @@ String selectTargetFromScan(const char *title) {
         passiveScanTime = 3;
     }
 
+#ifdef TRUCE_LVGL
+    truce::panelFrame(title,"Buscando dispositivos",{"Etapa: Ativa","Duração: "+String(activeScanTime)+" s"});truce::pumpOperation();
+#endif
     // === ACTIVE SCAN ===
     g_pBLEScan->setActiveScan(true);
     tft.setTextColor(bleDim(), bruceConfig.bgColor);
@@ -4250,6 +4289,9 @@ String selectTargetFromScan(const char *title) {
             scannerData.addDevice(name, address, rssi, fastPair, hasHFP, deviceType);
         }
 
+#ifdef TRUCE_LVGL
+        truce::panelFrame(title,"Buscando dispositivos",{"Etapa: Passiva","Duração: "+String(passiveScanTime)+" s"});truce::pumpOperation();
+#endif
         // === PASSIVE SCAN ===
         g_pBLEScan->setActiveScan(false);
         tft.setTextColor(bleDim(), bruceConfig.bgColor);
@@ -5732,6 +5774,12 @@ static int bleWrapText(const String &text, int x, int y, int w, int bottom) {
 }
 
 void showAttackProgress(const char *message, uint16_t color) {
+#ifdef TRUCE_LVGL
+    truce::beginOperation("Bluetooth");
+    truce::captureText(message?String(message):String("Em execução"),0,100);
+    truce::pumpOperation();
+    return;
+#endif
     BleUiGeom g = bleUiGeom();
     static uint8_t spinnerPos = 0;
     static String lastMsg;
@@ -5764,6 +5812,9 @@ void showAttackResult(bool success, const char *message) {
 }
 
 bool confirmAttack(const char *targetName) {
+#ifdef TRUCE_LVGL
+    return truce::prompt("Confirmar operação",String("Dispositivo selecionado:\n")+(targetName?targetName:""),{"Sim","Não"})==0;
+#endif
     BleUiGeom g = bleUiGeom();
     drawMainBorderWithTitle("Confirm Attack");
     tft.setTextSize(FP);
@@ -5787,6 +5838,9 @@ bool confirmAttack(const char *targetName) {
 }
 
 bool requireSimpleConfirmation(const char *message) {
+#ifdef TRUCE_LVGL
+    return truce::prompt("Confirmar",message?String(message):String(""),{"Sim","Não"})==0;
+#endif
     BleUiGeom g = bleUiGeom();
     drawMainBorderWithTitle("Confirm");
     tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
@@ -5807,6 +5861,14 @@ int8_t showAdaptiveMessage(
     const char *line1, const char *btn1, const char *btn2, const char *btn3, uint16_t color, bool showEscHint,
     bool autoProgress
 ) {
+#ifdef TRUCE_LVGL
+    std::vector<String> actions;
+    if(btn1 && *btn1)actions.emplace_back(btn1);
+    if(btn2 && *btn2)actions.emplace_back(btn2);
+    if(btn3 && *btn3)actions.emplace_back(btn3);
+    const int result=truce::prompt("Bluetooth",line1?String(line1):String(""),actions,actions.empty() && autoProgress?1500:0);
+    return actions.empty() && result<0?0:result;
+#endif
     // The hint line used to be drawn with TFT_BLACK on the theme background,
     // i.e. invisible on every dark theme, and the body wrapped against a
     // hardcoded y = 140 ceiling.
@@ -5867,6 +5929,9 @@ void showSuccessMessage(const char *message) { displaySuccess(String(message), t
 void showDeviceInfoScreen(
     const char *title, const std::vector<String> &lines, uint16_t bgColor, uint16_t textColor
 ) {
+#ifdef TRUCE_LVGL
+    truce::readDocument(title?String(title):String("Bluetooth"),lines);return;
+#endif
     // textColor is ignored on purpose: six call sites pass TFT_BLACK, which was
     // legible only against the solid colour this screen used to flood the panel
     // with. Body text now always uses the theme foreground, and the severity the

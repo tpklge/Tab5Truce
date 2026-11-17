@@ -1,7 +1,7 @@
 
 #include <Arduino.h>
 #include <FS.h>
-#include <LittleFS.h>
+#include "core/truce/legacy_fs.h"
 #include <SD.h>
 
 String encryptString(String &plaintext, const String &password_str);

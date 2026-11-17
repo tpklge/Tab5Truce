@@ -1,3 +1,5 @@
+#include "core/truce/runtime.h"
+#include <truce_hooks.h>
 #include "ble_common.h"
 #include "core/mykeyboard.h"
 #include "core/radio_mem.h"
@@ -64,6 +66,10 @@ char strID[18];
 char strAddl[200];
 
 void ble_info(const String &name, const String &address, const String &signal) {
+#ifdef TRUCE_LVGL
+    if(truce::inspect("Bluetooth","Informações do dispositivo",{"Nome: "+name,"Endereço: "+address,"Sinal: "+signal+" dBm"}))returnToMenu=true;
+    return;
+#endif
     drawMainBorder();
     tft.setTextColor(bruceConfig.priColor);
     int rowStep = LH * FP + 10;
@@ -141,7 +147,7 @@ bool ble_scan_setup() {
 
     // FIX: Always try to init - if already init'd, it's a no-op
     if (!radioHasMemForBle()) {
-        displayError("Low RAM: free WiFi/SD first", true);
+        displayError(radioBleFailureMessage(), true);
         returnToMenu = true;
         return false;
     }
@@ -196,7 +202,10 @@ void ble_scan() {
     }
 
     pBLEScan->clearResults();
-
+#ifdef TRUCE_LVGL
+    truce::panelFrame("Bluetooth","Buscando dispositivos",{"Duração: "+String(scanTime)+" s"});
+    truce::operationControls("","","","");truce::pumpOperation();
+#endif
     try {
         BLEScanResults foundDevices = pBLEScan->getResults(scanTime * 1000, false);
         int deviceCount = foundDevices.getCount();
@@ -220,6 +229,9 @@ void ble_scan() {
             else bt_title = bt_name;
             if (bt_title.isEmpty()) bt_title = bt_address;
 
+#ifdef TRUCE_LVGL
+            bt_title+="\n"+bt_signal+" dBm • "+bt_address;
+#endif
             if (options.size() < MAX_DISPLAY_DEVICES) {
                 options.emplace_back(bt_title.c_str(), [=]() { ble_info(bt_name, bt_address, bt_signal); });
                 processedCount++;
@@ -245,7 +257,11 @@ void ble_scan() {
 
     if (!options.empty()) {
         addOptionToMainMenu();
+#ifdef TRUCE_LVGL
+        loopOptions(options,MENU_TYPE_SUBMENU,"Dispositivos BLE");
+#else
         loopOptions(options);
+#endif
         options.clear();
     } else {
         displayError("No devices found");
@@ -321,6 +337,9 @@ void disPlayBLESend() {
 
     bool wasConnected = false;
     bool first_run = true;
+#ifdef TRUCE_LVGL
+    truce::beginDataPanel("BLE Send");truce::operationControls("","","","Parar");
+#endif
     while (!check(EscPress)) {
         if (deviceConnected) {
             if (!wasConnected) {

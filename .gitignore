@@ -24,3 +24,11 @@ lib/mquickjs_headers/mqjs_stdlib_generator.exe
 .github/agents/Bruce-AI.agent.md
 .idea
 .ai
+
+# Truce: local build outputs and device diagnostics
+/dist/
+**/__pycache__/
+*.py[cod]
+.DS_Store
+/artifacts/truce-ui/*.log
+/artifacts/truce-ui/* 2.*

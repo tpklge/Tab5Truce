@@ -56,7 +56,7 @@ void handleSerialCommands(SerialCli &serialCli) {
     // return to the menu after execution.
     String cmd_trimmed = cmd_str;
     cmd_trimmed.trim();
-    if (!cmd_trimmed.startsWith("nav") && !cmd_trimmed.startsWith("option")) { backToMenu(); }
+    if (!cmd_trimmed.startsWith("nav") && !cmd_trimmed.startsWith("option") && cmd_trimmed!="ui_metrics") { backToMenu(); }
 }
 
 void _serialCmdsTaskLoop(void *pvParameters) {

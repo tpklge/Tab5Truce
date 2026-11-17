@@ -80,6 +80,38 @@ public:
         iconAreaH = oldAreaH;
     }
 
+    // Decode into a bounded canvas: failed or unsupported assets never paint over a card.
+    // Scale 0 asks M5GFX to fit the image while preserving its aspect ratio.
+    bool drawThemeInBox(int centerX, int centerY, int box, uint16_t background) {
+#if defined(USE_M5GFX)
+        if (!checkTheme() || box < 1) return false;
+        String path = themePath();
+        String ext = path.substring(path.lastIndexOf('.'));
+        ext.toLowerCase();
+        if (ext != ".png" && ext != ".jpg" && ext != ".jpeg" && ext != ".bmp") return false;
+        FS &fs = *bruceConfig.themeFS();
+        if (!fs.exists(path)) return false;
+        M5Canvas canvas(&M5.Display);
+        canvas.setColorDepth(16);
+        if (!canvas.createSprite(box, box)) return false;
+        canvas.fillSprite(background);
+        bool ok = false;
+        if (ext == ".png")
+            ok = canvas.drawPngFile(fs, path.c_str(), box / 2, box / 2, box, box, 0, 0, 0, 0,
+                                    lgfx::datum_t::middle_center);
+        else if (ext == ".bmp")
+            ok = canvas.drawBmpFile(fs, path.c_str(), box / 2, box / 2, box, box, 0, 0, 0, 0,
+                                    lgfx::datum_t::middle_center);
+        else
+            ok = canvas.drawJpgFile(fs, path.c_str(), box / 2, box / 2, box, box, 0, 0, 0, 0,
+                                    lgfx::datum_t::middle_center);
+        if (ok) canvas.pushSprite(centerX - box / 2, centerY - box / 2);
+        return ok;
+#else
+        return false;
+#endif
+    }
+
     void drawArrows(float scale = 1) {
         tft.fillRect(arrowAreaX, iconAreaY, arrowAreaW, iconAreaH, bruceConfig.bgColor);
         tft.fillRect(

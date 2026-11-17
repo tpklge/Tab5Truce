@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 /*
 Thanks to thoses developers for their projects:
 * @7h30th3r0n3 : https://github.com/7h30th3r0n3/Evil-M5Core2 and https://github.com/7h30th3r0n3/PwnGridSpam
@@ -161,6 +162,9 @@ void beacon_task(void *pvParameters) {
 }
 
 void displaySpamStatus() {
+    #ifdef TRUCE_LVGL
+    truce::operationTitle("PwnGrid");
+    #endif
     tft.fillScreen(bruceConfig.bgColor);
     drawTopCanvas();
     drawBottomCanvas();

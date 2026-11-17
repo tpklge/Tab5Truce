@@ -1,0 +1,34 @@
+Start testing: Nov 15 20:54 -04
+----------------------------------------------------------
+1/2 Testing: ui_and_storage
+1/2 Test: ui_and_storage
+Command: "/tmp/truce-ui-host/truce_simulator" "/tmp/truce-ui-host/screenshots"
+Directory: /tmp/truce-ui-host
+"ui_and_storage" start time: Nov 15 20:54 -04
+Output:
+----------------------------------------------------------
+812 real LVGL layout scenarios; 1174 simulated touch taps; storage recovery and confinement passed.
+<end of output>
+Test time =  15.17 sec
+----------------------------------------------------------
+Test Passed.
+"ui_and_storage" end time: Nov 15 20:54 -04
+"ui_and_storage" time elapsed: 00:00:15
+----------------------------------------------------------
+
+2/2 Testing: radio_transport_failure_and_retry
+2/2 Test: radio_transport_failure_and_retry
+Command: "/tmp/truce-ui-host/truce_radio_transport"
+Directory: /tmp/truce-ui-host
+"radio_transport_failure_and_retry" start time: Nov 15 20:54 -04
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"radio_transport_failure_and_retry" end time: Nov 15 20:54 -04
+"radio_transport_failure_and_retry" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 15 20:54 -04

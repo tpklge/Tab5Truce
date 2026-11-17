@@ -1,4 +1,5 @@
 #include "spectrum_plot.h"
+#include "core/truce/runtime.h"
 
 #include "core/display.h"
 #include <globals.h>
@@ -97,6 +98,9 @@ void SpectrumPlot::buildPalette() {
 
 bool SpectrumPlot::begin(const String &title, bool sdrWaterfall) {
     _sdr = sdrWaterfall;
+#ifdef TRUCE_LVGL
+    _plotL=0;_plotW=256;_ok=truce::beginSpectrum(title,sdrWaterfall);return _ok;
+#endif
     buildGeometry();
     buildPalette();
 
@@ -116,6 +120,9 @@ bool SpectrumPlot::begin(const String &title, bool sdrWaterfall) {
 }
 
 void SpectrumPlot::end() {
+#ifdef TRUCE_LVGL
+    if(_ok)truce::endOperation();
+#endif
     free(_wf);
     _wf = nullptr;
     _wfRows = 0;
@@ -124,6 +131,9 @@ void SpectrumPlot::end() {
 
 void SpectrumPlot::trace(const uint8_t *env, const uint8_t *envPeak, int hlL, int hlR, bool alert) {
     if (!_ok || !env) return;
+#ifdef TRUCE_LVGL
+    truce::spectrumTrace(env,envPeak,hlL,hlR,alert);return;
+#endif
 
     uint16_t trace = alert ? alertColor() : _trace;
     uint16_t bodyHl = alert ? blendColors(_bg, trace, 165) : _bodyHl;
@@ -189,6 +199,9 @@ void SpectrumPlot::drawWaterfall() {
 }
 
 void SpectrumPlot::pushRow(const uint8_t *env) {
+#ifdef TRUCE_LVGL
+    if(_ok && env)truce::spectrumRow(env);return;
+#endif
     if (!_ok || !_wfRows || !_wf || !env) return;
     _wfHead = (_wfHead + 1) % _wfRows;
     memcpy(_wf + (size_t)_wfHead * _plotW, env, _plotW);
@@ -196,6 +209,9 @@ void SpectrumPlot::pushRow(const uint8_t *env) {
 }
 
 void SpectrumPlot::ruler(const int *cols, const String *labels, int count, int highlight) {
+#ifdef TRUCE_LVGL
+    if(_ok)truce::spectrumRuler(cols,labels,count,highlight);return;
+#endif
     if (!_ok || _lblY < 0 || !cols || !labels) return;
 
     int h = 8 * FP;
@@ -220,6 +236,9 @@ void SpectrumPlot::ruler(const int *cols, const String *labels, int count, int h
 }
 
 void SpectrumPlot::status(const String &text, bool alert) {
+#ifdef TRUCE_LVGL
+    if(_ok)truce::graphicStatus(text);return;
+#endif
     if (!_ok || _footY < 0) return;
 
     tft.fillRect(_plotL, _footY, _plotW, 8 * FP, _bg);

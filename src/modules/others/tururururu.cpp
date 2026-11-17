@@ -1,8 +1,26 @@
 #include "tururururu.h"
+#include "core/truce/runtime.h"
 #include "core/display.h"
 #include "core/mykeyboard.h"
 #include <globals.h>
 
+static int gameWidth() {
+#ifdef TRUCE_LVGL
+    return 320;
+#else
+    return tftWidth;
+#endif
+}
+static int gameHeight() {
+#ifdef TRUCE_LVGL
+    return 180;
+#else
+    return tftHeight;
+#endif
+}
+#ifdef TRUCE_LVGL
+static bool gamePaused=false;
+#endif
 // By: @IncursioHack / github.com/IncursioHack
 
 // Configuração do personagem principal (tubarão)
@@ -22,9 +40,14 @@ Fish fish[5]; // Array de peixes
 int score = 0;
 
 void initSprites() {
+#ifdef TRUCE_LVGL
+    std::vector<std::pair<int,int>> positions;
+    for(const auto &f:fish)positions.emplace_back(f.x,f.y);
+    truce::gameFrame(sharkX-sharkSize,sharkY-7,positions,score,gamePaused);return;
+#endif
     // sprite para desenhar a tela toda
     // tft.deleteSprite();
-    // tft.createSprite(tftWidth,tftHeight);
+    // tft.createSprite(gameWidth(),gameHeight());
     tft.fillScreen(bruceConfig.bgColor);
 
     // menu_op para desenhar o tubarao
@@ -53,16 +76,22 @@ void initSprites() {
 
 // Função para desenhar o tubarão
 void drawShark() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     sprite.pushSprite(sharkX - sharkSize, sharkY - 7);
     // sprite.pushToSprite(&sprite,sharkX-sharkSize, sharkY,TFT_TRANSPARENT);
 }
 
 // Função para desenhar peixes
 void drawFish(Fish &f) {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     draw.pushSprite(f.x, f.y);
     // draw.pushToSprite(&sprite,f.x,f.y,TFT_TRANSPARENT);
 }
-#define STEP (tftHeight) / 44
+#define STEP (gameHeight()) / 44
 
 // Função para mover o tubarão
 void detectInputs() {
@@ -82,7 +111,7 @@ void moveShark() {
         sharkUp = false;
     }
     if (sharkY < 0) { sharkY = 0; }
-    if (sharkY > tftHeight - sharkSize) { sharkY = tftHeight - sharkSize; }
+    if (sharkY > gameHeight() - sharkSize) { sharkY = gameHeight() - sharkSize; }
 }
 
 // Função para mover peixes
@@ -90,8 +119,8 @@ void moveFish(Fish &f) {
     f.x -= 2; // Move o peixe para a esquerda
     if (f.x < -10) {
         tft.fillRect(f.x, f.y, 22, 11, bruceConfig.bgColor);
-        f.x = tftWidth + random(20, 100);
-        f.y = random(10, tftHeight - 20);
+        f.x = gameWidth() + random(20, 100);
+        f.y = random(10, gameHeight() - 20);
     }
 }
 
@@ -102,8 +131,8 @@ void checkCollisions() {
             (sharkY < fish[i].y + fish[i].size) && (sharkY + sharkSize > fish[i].y)) {
             // Colidiu com um peixe
             tft.fillRect(fish[i].x, fish[i].y, 18, 8, bruceConfig.bgColor);
-            fish[i].x = tftWidth + random(20, 100);
-            fish[i].y = random(10, tftHeight - 20);
+            fish[i].x = gameWidth() + random(20, 100);
+            fish[i].y = random(10, gameHeight() - 20);
             score++;
         }
     }
@@ -111,6 +140,9 @@ void checkCollisions() {
 
 // Função para exibir a pontuação
 void displayScore() {
+#ifdef TRUCE_LVGL
+    return;
+#endif
     tft.setTextColor(TFT_WHITE, bruceConfig.bgColor);
     tft.setTextSize(FM);
     tft.setCursor(0, 0);
@@ -118,15 +150,18 @@ void displayScore() {
 }
 
 void shark_setup() {
+#ifdef TRUCE_LVGL
+    score=0;sharkX=40;sharkY=80;sharkUp=sharkDown=false;gamePaused=false;
+#endif
     // Inicializa a posição dos peixes
     for (int i = 0; i < 5; i++) {
-        fish[i].x = tftWidth + random(20, 100);
-        fish[i].y = random(10, tftHeight - 20);
+        fish[i].x = gameWidth() + random(20, 100);
+        fish[i].y = random(10, gameHeight() - 20);
         fish[i].size = 8;
     }
     // desenha peixes e inicia o display
     initSprites();
-    if (tft.getLogging()) tft.log_drawString("Not Supported", DRAWCENTRESTRING, tftWidth / 2, tftHeight / 2);
+    if (tft.getLogging()) tft.log_drawString("Not Supported", DRAWCENTRESTRING, gameWidth() / 2, gameHeight() / 2);
     // inicia o jogo
     shark_loop();
 }
@@ -134,13 +169,23 @@ void shark_setup() {
 void shark_loop() {
     int downTime = 50;
     unsigned long time = 0;
+#ifdef TRUCE_LVGL
+    std::vector<std::pair<int,int>> positions(5);
+#endif
     for (;;) {
+#ifdef TRUCE_LVGL
+        if(check(SelPress))gamePaused=!gamePaused;
+#endif
         // Mostra a tela
 
         // Começa a desenhar o Sprite
         displayScore();
         detectInputs();
-        if (millis() - time > downTime) {
+        if (millis() - time > downTime
+#ifdef TRUCE_LVGL
+            && !gamePaused
+#endif
+        ) {
             // Move o tubarão
             moveShark();
             // Desenha o tubarão
@@ -155,6 +200,11 @@ void shark_loop() {
             time = millis();
         }
 
+#ifdef TRUCE_LVGL
+        for(int i=0;i<5;++i)positions[i]={fish[i].x,fish[i].y};
+        truce::gameFrame(sharkX-sharkSize,sharkY-7,positions,score,gamePaused);
+        vTaskDelay(pdMS_TO_TICKS(5));
+#endif
         // Pequeno atraso para controlar a velocidade do loop
         if (score < 10) downTime = 50;
         else if (score >= 10 && score < 20) downTime = 40;
@@ -197,6 +247,9 @@ void shark_loop() {
     }
 
 Exit:
+#ifdef TRUCE_LVGL
+    truce::endOperation();
+#endif
     delay(150);
     Serial.println();
 }

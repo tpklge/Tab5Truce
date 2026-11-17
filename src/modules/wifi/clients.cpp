@@ -2,6 +2,7 @@
 // SSH borrowed from https://github.com/m5stack/M5Cardputer :)
 
 #include "clients.h"
+#include "core/truce/runtime.h"
 
 // SSH libs
 #include "libssh_esp32.h"
@@ -47,8 +48,13 @@ bool filterAnsiSequences = true;
 namespace {
 constexpr size_t CLIENT_IO_BUFFER_SIZE = 256;
 constexpr size_t MAX_QUEUED_OUTPUT_BYTES = 128;
+#ifdef TRUCE_SD_ONLY
+constexpr const char *SSH_USER_KNOWN_HOSTS_PATH = "/sd/truce/known_hosts";
+constexpr const char *SSH_GLOBAL_KNOWN_HOSTS_PATH = "/sd/truce/ssh_known_hosts";
+#else
 constexpr const char *SSH_USER_KNOWN_HOSTS_PATH = "/littlefs/known_hosts";
 constexpr const char *SSH_GLOBAL_KNOWN_HOSTS_PATH = "/littlefs/ssh_known_hosts";
+#endif
 constexpr int TERMINAL_PAD_X = 3;
 constexpr int TERMINAL_PAD_Y = 3;
 
@@ -390,6 +396,9 @@ bool isSessionConnecting() {
 }
 
 void resetClientScreen(const char *title) {
+#ifdef TRUCE_LVGL
+    truce::terminalReset(title,getQueuedPromptContext());return;
+#endif
     (void)title;
     tft.fillScreen(bruceConfig.bgColor);
     tft.drawRect(0, 0, tftWidth, tftHeight, bruceConfig.priColor);
@@ -511,6 +520,9 @@ void ensureCursorOnFreshLine() {
 }
 
 void redrawCurrentCommandLine() {
+#ifdef TRUCE_LVGL
+    truce::terminalPrompt(commandBuffer);return;
+#endif
     int lineHeight = max(1, FP * LH);
     int lineY = tft.getCursorY();
     if (lineY < TERMINAL_PAD_Y) lineY = TERMINAL_PAD_Y;
@@ -589,6 +601,9 @@ bool tryAppendLiveInputSuffixFromRemoteLine(const String &line, bool renderUpdat
 }
 
 void renderPrompt(bool forceNewLine) {
+#ifdef TRUCE_LVGL
+    truce::terminalPrompt(commandBuffer);return;
+#endif
     tft.setTextSize(FP);
     if (commandBuffer == "> ") {
         String promptPrefix = getQueuedPromptPrefix();
@@ -656,6 +671,9 @@ int getTerminalRows() {
 }
 
 void renderVisibleText(const String &title, const String &text, bool appendNewline) {
+#ifdef TRUCE_LVGL
+    truce::terminalAppend(title,text,appendNewline);return;
+#endif
     ensureCursorOnFreshLine();
     tft.setTextColor(TFT_WHITE, bruceConfig.bgColor);
     for (size_t i = 0; i < text.length(); ++i) {
@@ -1179,6 +1197,9 @@ void runSessionUiLoop(const String &title) {
         }
 #endif
 
+#ifdef TRUCE_LVGL
+        truce::terminalPrompt(commandBuffer);
+#endif
         if (check(EscPress) && isDelPressed == false) {
             if (isSessionConnecting()) { displayWarning("Closing session...", false); }
             break;

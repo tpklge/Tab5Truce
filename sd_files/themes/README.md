@@ -64,3 +64,20 @@ You can use [Bruce Theme Builder](https://bruce.computer/build_theme.html) to se
 Config > UI Theme > (Choose FS) > select the .json file and the theme will be set.
 
 
+
+## Tab5 card grid
+
+The Tab5 defaults to the grid on a fresh configuration. Existing configurations keep
+their saved menu style; choose **Config > Display & UI > Menu Layout > Grid** to switch.
+
+On M5GFX devices, grid cells load the same per-category theme paths as the carousel.
+PNG (including transparency), JPG/JPEG and BMP are fitted proportionally into a bounded
+canvas. Missing files, decode failures, allocation failures and unsupported formats
+fall back to the built-in category icon. GIF animation remains available in the
+carousel; the grid uses the built-in icon for GIF entries to keep navigation responsive.
+
+For Tab5, use square PNG icons around 128 x 128 pixels. Transparent icons adapt to the
+normal and selected card backgrounds. Labels remain visible in the grid for navigation.
+The canvas uses at most 32 KiB per 128 x 128 icon and is released after drawing.
+Card and status colors follow the existing primary, secondary and background colors.
+The saved carousel option and the layouts of other boards remain available.

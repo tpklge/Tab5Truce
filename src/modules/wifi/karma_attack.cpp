@@ -1,3 +1,4 @@
+#include "core/truce/runtime.h"
 #ifndef LITE_VERSION
 #include "karma_attack.h"
 #include "FS.h"
@@ -2427,6 +2428,17 @@ void updateKarmaDisplay() {
     if (currentTime - last_time > 1000) {
         last_time = currentTime;
 
+#ifdef TRUCE_LVGL
+        truce::panelFrame("Karma",karmaPaused?"Pausado":"Em execução",{
+            "Sondas: "+String(totalProbes),"Dispositivos: "+String(uniqueClients),
+            "Redes: "+String(activeNetworks.size()),"Fila: "+String(responseQueue.size()),
+            "Beacons: "+String(beaconsSent),"Respostas: "+String(karmaResponsesSent),
+            "Clones: "+String(cloneAttacksLaunched),"Portais: "+String(activePortalCount()),
+            "Capturas: "+String(handshakeBuffer.size()),"PMKID: "+String(pmkidCaptured),
+            "Canal: "+String(pgm_read_byte(&karma_channels[channl%14]))+" • "+(auto_hopping?"Auto":"Manual"),
+            "Modelo: "+selectedTemplate.name});
+        truce::operationControls("Canal anterior","Próximo canal","Menu","Menu");return;
+#endif
         tft.fillRect(
             BORDER_PAD_X, BORDER_PAD_Y, tftWidth - 2 * BORDER_PAD_X, tftHeight - BORDER_PAD_Y - 25,
             bruceConfig.bgColor
